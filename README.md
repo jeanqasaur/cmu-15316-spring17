@@ -1,3 +1,2 @@
 # 15-316: Software Foundations of Security and Privacy
-## Computer Science Department, Carnegie Mellon University
-## Spring 2017
+Course materials for our course in the Computer Science Department at Carnegie Mellon University, spring 2017.
