@@ -1,0 +1,310 @@
+\documentclass[11pt]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% EDIT THESE TWO COMMANDS TO BE YOUR ANDREW ID AND NAME
+\newcommand*{\stulogin}{}
+\newcommand*{\stuname}{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\usepackage{algorithm2e}
+\usepackage{fancyheadings}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{fullpage-old}
+\usepackage{graphics}
+\usepackage{sudoku}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{framed}
+\usepackage{xcolor}
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{xspace}
+
+\usepackage{ragged2e}
+% \usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{listings}
+% \usepackage{syntax}
+\usepackage{semantic}
+\usepackage{mathpartir}
+\usepackage{stmaryrd}
+\usepackage{amsmath}
+\usepackage{xspace}
+\usepackage{adjustbox}
+\usepackage{xspace}
+\usepackage{algpseudocode}
+\usepackage{mathtools}
+\usepackage{array}
+\usepackage{rotating}
+
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{backgray}{gray}{0.95}
+\lstdefinelanguage
+   [x86]{Assembler}     
+   [x86masm]{Assembler}    
+   {morekeywords={movl, addl, subl, cmpl}} 
+\lstdefinestyle{customc}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  language=C,
+  showstringspaces=false,
+  numbers=none,
+  % xleftmargin=1ex,
+  framexleftmargin=1ex,
+  % numbersep=5pt,
+  % numberstyle=\tiny\color{mygray},
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\color{blue},
+  commentstyle=\itshape\color{purple!40!black},  
+  stringstyle=\color{orange},
+  morekeywords={output,assume,observe,input,bool,then,fun,match,in,val,list,type,of,string,unit,let,bytes,mov,imul,add,sar,shr,function,forall,nat,requires,ensures,method,returns,assert,new,array,modifies,reads,old,predicate,lemma,seq,calc,nan,var,exists,invariant,decreases,string},
+  tabsize=2,
+  deletestring=[b]',
+  backgroundcolor=\color{gray!15},
+  frame=tb
+}
+\lstset{escapechar=@,style=customc}
+
+\usetikzlibrary{automata,shapes,positioning}
+
+\renewenvironment{shaded}{%
+  \def\FrameCommand{\fboxsep=\FrameSep \colorbox{shadecolor}}%
+  \MakeFramed{\advance\hsize-\width \FrameRestore\FrameRestore}}%
+ {\endMakeFramed}
+\definecolor{shadecolor}{gray}{0.95}
+
+\newcommand{\ex}{\ensuremath{\mathbf{EX\ }}\xspace}
+\newcommand{\eg}{\ensuremath{\mathbf{EG\ }}\xspace}
+\newcommand{\ef}{\ensuremath{\mathbf{EF\ }}\xspace}
+\newcommand{\ax}{\ensuremath{\mathbf{AX\ }}\xspace}
+\newcommand{\ag}{\ensuremath{\mathbf{AG\ }}\xspace}
+\newcommand{\af}{\ensuremath{\mathbf{AF\ }}\xspace}
+\newcommand{\nextt}{\ensuremath{\mathbf{X\ }}\xspace}
+\newcommand{\future}{\ensuremath{\mathbf{F\ }}\xspace}
+\newcommand{\always}{\ensuremath{\mathbf{G\ }}\xspace}
+\newcommand{\until}{\ensuremath{\mathbf{\ U\ }}\xspace}
+\newcommand{\release}{\ensuremath{\mathbf{\ R\ }}\xspace}
+\newcommand{\existpath}{\ensuremath{\mathbf{E\ }}\xspace}
+\newcommand{\forallpath}{\ensuremath{\mathbf{A\ }}\xspace}
+
+\newcommand{\imp}{\ensuremath{\mathsf{Imp}}\xspace}
+\newcommand{\aexp}{\ensuremath{\mathsf{AExp}}\xspace}
+\newcommand{\bexp}{\ensuremath{\mathsf{BExp}}\xspace}
+\newcommand{\com}{\ensuremath{\mathsf{Com}}\xspace}
+\newcommand{\var}{\ensuremath{\mathsf{Var}}\xspace}
+\newcommand{\strue}{\ensuremath{\mathsf{true}}\xspace}
+\newcommand{\sfalse}{\ensuremath{\mathsf{false}}\xspace}
+\newcommand{\true}{\ensuremath{\mathit{true}}\xspace}
+\newcommand{\false}{\ensuremath{\mathit{false}}\xspace}
+
+\newcommand*{\assignmentnumb}{0}
+% ---------------------------------------------------------------------------
+
+\lhead[{\bfseries 15-316\quad Assignment \assignmentnumb\ \ \ \stulogin}]{{\bfseries 15-316\quad Assignment \assignmentnumb\ \ \ \stulogin}}
+\rhead[{\bfseries\thepage}]{{\bfseries\thepage}}
+\pagestyle{fancy}
+\parskip 1ex
+\parindent 0mm
+
+% -----------Danny's Macros-------------
+
+\newcommand{\problem}[1]{\section{#1}\vspace{-1em}}
+\newcounter{partnumber}
+\newenvironment{parts}{\begin{list}{
+      % \arabic{problemnumber}\alph{partnumber}:}{
+      (\alph{partnumber})}{
+      \usecounter{partnumber} \setlength{\rightmargin}{\leftmargin}}
+    \setlength{\itemsep}{.0 in}}{
+  \end{list} \vspace*{.0 in}}
+
+% ---------------------------------------
+
+\begin{document}
+
+\centerline{Instructors: Matt Fredrikson, Jean Yang \hfill TA: Samuel Yeom} 
+\vspace{0.5ex}
+Due date: 1/24/2017 at 11:59pm \\
+\vspace{1.5ex}
+\centerline{\Large\bf Assignment \assignmentnumb}
+\vspace{0.5ex}
+\centerline{\Large\bf \stuname}
+
+\paragraph{Instructions:} 
+
+Complete all the required problems listed below. You may also submit the solutions for the optional problems if you would like our feedback.
+
+When finished, compile your solutions to a pdf, and email a zip of the PDF and relevant code to the TA by the due date. Be sure to add your Andrew ID and full name in the \texttt{stulogin} and \texttt{stuname} macros at the top of \texttt{hw0.tex}.
+
+% \newpage
+\begin{problem}{Course startup (5 points)}
+
+\paragraph{Part 1 (0 points)}
+If you have not been added to the course's Piazza, please email the instructors (\texttt{15316-spring17-staff@cs.cmu.edu}) to be added.
+
+\paragraph{Part 2 (5 Points)}
+
+Email the course staff (\texttt{15316-spring17-staff}) introducing yourself! Tell us your name, your major and year, how the course fits in with your core values, what you hope to get out of the course, and a fun fact about yourself. Feel free to tell us your questions and concerns as well.
+
+\end{problem}
+
+\newpage
+\begin{problem}{Getting Started with OCaml (0 points)}
+
+The skeleton code for this problem is in \texttt{2/exercises.ml}.
+
+\paragraph{Part 1 (0 points)}
+
+Follow the instructions to install OCaml on your system:
+\begin{verbatim}
+http://www.ocaml.org/docs/install.html
+\end{verbatim}
+
+Install the OPAM package manager and run the following to initalize OPAM, and then to install the OUnit package for unit testing:
+\begin{verbatim}
+opam init
+opam install ounit
+\end{verbatim}
+
+\paragraph{Part 2 (0 points)}
+
+Open an OCaml interactive session (\texttt{ocaml}) and use it to determine the types of the following functions. What do the types mean?\footnote{Problem taken from \url{https://www.cs.rice.edu/~sc40/COMP507/Assignments/assign0.pdf}}
+\begin{enumerate}
+\item \texttt{let f (x,y) = x :: y}
+\item \texttt{let f (g, h) = function x -> g (h x)}
+\item \texttt{let f g h = function x -> g (h x)}
+\item \texttt{let f x y z = if x < y then "hello" else z}
+\end{enumerate}
+
+\paragraph{Part 3 (0 points)}
+
+Complete the code and tests from \texttt{exercises0.ml} to write the following functions:
+\begin{enumerate}
+\item Fibonacci.
+\item List reversal.
+\item A function \texttt{filter lst f} that takes a list \texttt{lst: 'a} and a function \texttt{f: 'a -> bool} and returns a list {r: 'a} of the elements in \texttt{f} satisfying \texttt{f}.
+\end{enumerate}
+Run the code using the following command to create the executable \texttt{exercises0}:
+\begin{verbatim}
+ocamlfind ocamlc -package oUnit -linkpkg -g -o exercises0 exercises0.ml 
+\end{verbatim}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%
+%%% Write your solution to problem 2 below.
+%%% Uncomment the lines starting at the
+%%% \newpage.
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \newpage
+% \paragraph{Part 2 Solution}
+% 
+
+\end{problem}
+
+\newpage
+\begin{problem}{A Tiny Calculator (0 Points)}
+For this exercise, we will build a calculator in \emph{reverse polish notation}. Also called \emph{postfix} notation, RPN is a mathematical notation in which every operator follows all of its operands. This notation is often used in stack-based and concatenative programming languages.
+
+Here are some examples of expressions in infix and prefix notation:
+
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Infix} & \textbf{RPN}\\
+\hline
+\hline
+$1 + 2$ & $1~2 +$\\
+$3 - 4 + 5$ & $3~4 - 5 +$\\
+$(3 - 4) * 5$ & $3~4~5 * -$\\
+\hline
+\end{tabular}
+
+The algorithm for RPN is as follows:
+\begin{algorithm}
+\While{there are input tokens left}{
+  Read the next token from input\;
+  \eIf{token is a value}{
+    Push it onto the stack\;
+  }{
+    It is already known that the other takes $n$ arguments\;
+    \eIf{there are fewer than $n$ values on the stack}{
+      Raise an error\;
+    }{
+      Pop the top $n$ values from the stack\;
+    }
+    Evaluate the operator with the values as arguments\;
+    Push the returned results back onto the stack\;
+  }
+\eIf{there is only one value in the stack}{
+  That value is the result\;
+}{
+  Error: the user input has too many values\;
+}
+}
+\caption{Reverse Polish Notation algorithm.}
+\end{algorithm}
+
+The skeleton code for this problem is in \texttt{3/calc.ml} and is based on a snippet from Rosetta Code.
+
+\paragraph{Part 1 (0 points)}
+Compile \texttt{calc.ml}:
+\begin{verbatim}
+ocamlc str.cma calc.ml -o calc
+\end{verbatim}
+You should get the \texttt{Unimplemented} error when you run \texttt{calc}.
+
+\paragraph{Part 2 (0 points)}
+Understand the structure of the code that we have written for you. What do the functions \texttt{print\_answer}, \texttt{rpn\_eval}, and \texttt{interp\_and\_show} do?
+
+\paragraph{Part 3 (0 points)}
+Fill in the bodies of \texttt{interp} and \texttt{binop} so that running \texttt{calc} prints the following output:
+\begin{verbatim}
+***
+3 2 5 + -
+Token	Action	Stack
+3	push	3. 
+2	push	3. 2. 
+5	push	3. 2. 5. 
++	add	3. 7. 
+-	subtr	-4. 
+-4.
+***
+3 2 + 5 -
+Token	Action	Stack
+3	push	3. 
+2	push	3. 2. 
++	add	5. 
+5	push	5. 5. 
+-	subtr	0. 
+0.
+***
+2 3 11 + 5 - *
+Token	Action	Stack
+2	push	2. 
+3	push	2. 3. 
+11	push	2. 3. 11. 
++	add	2. 14. 
+5	push	2. 14. 5. 
+-	subtr	2. 9. 
+*	mult	18. 
+18.
+***
+9 5 3 + 2 4 ^ - +
+Token	Action	Stack
+9	push	9. 
+5	push	9. 5. 
+3	push	9. 5. 3. 
++	add	9. 8. 
+2	push	9. 8. 2. 
+4	push	9. 8. 2. 4. 
+^	exp	9. 8. 16. 
+-	subtr	9. -8. 
++	add	1. 
+1.
+\end{verbatim}
+
+\end{problem}
+
+\end{document}
