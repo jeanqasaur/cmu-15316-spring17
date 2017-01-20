@@ -1,0 +1,6 @@
+{"status":"SET"}
+{"status":"SET"}
+{"status":"APPEND"}
+{"status":"APPEND"}
+{"status":"APPEND"}
+{"output":["first element",{"field":"data","value":"second element"}],"status":"RETURNING"}

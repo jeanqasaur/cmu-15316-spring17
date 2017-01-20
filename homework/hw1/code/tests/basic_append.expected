@@ -1,0 +1,5 @@
+{"status":"SET"}
+{"status":"APPEND"}
+{"status":"APPEND"}
+{"status":"APPEND"}
+{"output":[{"name":"Alice","date":"5-14-13"},{"name":"Bob","date":"3-1-14"},{"name":"Mallory","date":"11-5-16"}],"status":"RETURNING"}

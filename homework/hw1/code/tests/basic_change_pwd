@@ -1,0 +1,5 @@
+as principal admin password "admin" do
+   create principal alice "alices_password"
+   change password alice "alices_new_password"
+   return "success"
+***

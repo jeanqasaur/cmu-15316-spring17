@@ -1,0 +1,549 @@
+\documentclass[11pt]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% EDIT THESE TWO COMMANDS TO BE YOUR ANDREW ID AND NAME
+\newcommand*{\stulogin}{}
+\newcommand*{\stuname}{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\usepackage{algorithm2e}
+\usepackage{fancyheadings}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{fullpage-old}
+\usepackage{graphics}
+\usepackage{sudoku}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{framed}
+\usepackage{xcolor}
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{xspace}
+
+\usepackage{ragged2e}
+% \usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{listings}
+% \usepackage{syntax}
+% \usepackage{semantic}
+% \usepackage{mathpartir}
+\usepackage{stmaryrd}
+\usepackage{amsmath}
+\usepackage{xspace}
+\usepackage{adjustbox}
+\usepackage{xspace}
+\usepackage{algpseudocode}
+\usepackage{mathtools}
+\usepackage{array}
+\usepackage{rotating}
+\usepackage{dirtree}
+
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{backgray}{gray}{0.95}
+\lstdefinelanguage
+   [x86]{Assembler}     
+   [x86masm]{Assembler}    
+   {morekeywords={movl, addl, subl, cmpl}} 
+\lstdefinestyle{customc}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  language=C,
+  showstringspaces=false,
+  numbers=none,
+  % xleftmargin=1ex,
+  framexleftmargin=1ex,
+  numbers=left,
+  numbersep=5pt,
+  numberstyle=\tiny\color{mygray},
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\color{blue},
+  commentstyle=\itshape\color{purple!40!black},  
+  stringstyle=\color{orange},
+  morekeywords={as,principal,password,do,exit,return,create,change,set,append,to,local,foreach,in,replacewith,filtereach,with,if,then,else,true,false,equal,notequal},
+  tabsize=2,
+  deletestring=[b]',
+  backgroundcolor=\color{gray!15},
+  frame=tb
+}
+\lstset{escapechar=@,style=customc}
+
+\usetikzlibrary{automata,shapes,positioning}
+
+\renewenvironment{shaded}{%
+  \def\FrameCommand{\fboxsep=\FrameSep \colorbox{shadecolor}}%
+  \MakeFramed{\advance\hsize-\width \FrameRestore\FrameRestore}}%
+ {\endMakeFramed}
+\definecolor{shadecolor}{gray}{0.95}
+
+\newcommand{\ex}{\ensuremath{\mathbf{EX\ }}\xspace}
+\newcommand{\eg}{\ensuremath{\mathbf{EG\ }}\xspace}
+\newcommand{\ef}{\ensuremath{\mathbf{EF\ }}\xspace}
+\newcommand{\ax}{\ensuremath{\mathbf{AX\ }}\xspace}
+\newcommand{\ag}{\ensuremath{\mathbf{AG\ }}\xspace}
+\newcommand{\af}{\ensuremath{\mathbf{AF\ }}\xspace}
+\newcommand{\nextt}{\ensuremath{\mathbf{X\ }}\xspace}
+\newcommand{\future}{\ensuremath{\mathbf{F\ }}\xspace}
+\newcommand{\always}{\ensuremath{\mathbf{G\ }}\xspace}
+\newcommand{\until}{\ensuremath{\mathbf{\ U\ }}\xspace}
+\newcommand{\release}{\ensuremath{\mathbf{\ R\ }}\xspace}
+\newcommand{\existpath}{\ensuremath{\mathbf{E\ }}\xspace}
+\newcommand{\forallpath}{\ensuremath{\mathbf{A\ }}\xspace}
+
+\newcommand{\imp}{\ensuremath{\mathsf{Imp}}\xspace}
+\newcommand{\aexp}{\ensuremath{\mathsf{AExp}}\xspace}
+\newcommand{\bexp}{\ensuremath{\mathsf{BExp}}\xspace}
+\newcommand{\com}{\ensuremath{\mathsf{Com}}\xspace}
+\newcommand{\var}{\ensuremath{\mathsf{Var}}\xspace}
+\newcommand{\strue}{\ensuremath{\mathsf{true}}\xspace}
+\newcommand{\sfalse}{\ensuremath{\mathsf{false}}\xspace}
+\newcommand{\true}{\ensuremath{\mathit{true}}\xspace}
+\newcommand{\false}{\ensuremath{\mathit{false}}\xspace}
+
+\newcommand*{\escape}[1]{\expandafter\string\csname #1\endcsname}
+
+\newcommand*{\assignmentnumb}{1}
+% ---------------------------------------------------------------------------
+
+\lhead[{\bfseries 15-316\quad Assignment \assignmentnumb\ \ \ \stulogin}]{{\bfseries 15-316\quad Assignment \assignmentnumb\ \ \ \stulogin}}
+\rhead[{\bfseries\thepage}]{{\bfseries\thepage}}
+\pagestyle{fancy}
+\parskip 1ex
+\parindent 0mm
+
+% -----------Danny's Macros-------------
+
+\newcommand{\problem}[1]{\section{#1}\vspace{-1em}}
+\newcounter{partnumber}
+\newenvironment{parts}{\begin{list}{
+      % \arabic{problemnumber}\alph{partnumber}:}{
+      (\alph{partnumber})}{
+      \usecounter{partnumber} \setlength{\rightmargin}{\leftmargin}}
+    \setlength{\itemsep}{.0 in}}{
+  \end{list} \vspace*{.0 in}}
+
+% ---------------------------------------
+
+\begin{document}
+
+\centerline{Instructors: Matt Fredrikson, Jean Yang \hfill TA: Samuel Yeom} 
+\vspace{0.5ex}
+Due date: 2/2/2017 at 11:59pm \\
+\vspace{1.5ex}
+\centerline{\Large\bf Assignment \assignmentnumb}
+\vspace{0.5ex}
+\centerline{\Large\bf \stuname}
+
+\begin{problem}{Build a basic data server (30 points)}
+
+Your task is to implement a data server with a basic security policy. Clients should be able to connect to your server via TCP, send a program written in the server's scripting language, and view the results as a JSON string. Programs can store data on the server, which can later be retrieved by other programs that are executed. The server does not persist data across executions, so when its process is terminated, all existing data becomes inaccessible when the server is later restarted.
+
+Below is a detailed specification of what your server is expected to achieve. \emph{Read this carefully, as you will be graded against a test suite developed by the course staff to determine compliance with the spec!} In particular, be sure to hand in a solution containing a \texttt{Makefile} that, when run, produces binary executables \texttt{server} and \texttt{interp}. Note also that your implementation must be done in OCaml. You are encouraged to use the scaffolding code provided by the course staff (see details in the \textbf{Code Handout} section).
+
+Please note that while this specification may look daunting in its length, much of the code needed to meet the spec, particularly with regards to parsing and output formatting, has been provided. The intent of this document is to provide you with a sufficient level of detail to successfully implement a secure initial server, and to design a robust test suite.
+
+\emph{Note: The specification is based on that given at \url{https://builditbreakit.org/static/doc/fall2016/index.html}. You might find it helpful to consult that page for further examples of the language, but be aware that the language described in the current document is not identical to that used in the Build It, Break It, Fix It competition, nor are the requirements for your server. If you feel that there is ambiguity in the spec, post a question to Piazza.} 
+
+\section*{Server Specification}
+
+\paragraph{Running the server.} The server should run by executing the command:
+\begin{verbatim}
+./server PORT [PASSWORD]
+\end{verbatim}
+This command initates a fresh server that listens for incoming TCP connections on port \texttt{PORT}, and (optionally) initializes the administrator password to \texttt{PASSWORD}.
+
+The server should only halt when directed by the administrator via the $\mathtt{exit}$ command (details in a later section). We assume that the hardware and operating system on which the server is running are fault-free.
+
+\paragraph{Command-line interpreter.} To facilitate testing and debugging, the core functionality of the server should be accessible through a non-network interface. This interface is contained in the binary \texttt{interp}, which can be invoked in either of two ways:
+\begin{verbatim}
+./interp
+\end{verbatim}
+When \texttt{interp} is given no arguments, it accepts a program from \texttt{stdin}, executes it, and terminates.
+\begin{verbatim}
+./interp PROGRAM1 [PROGRAM2] ...
+\end{verbatim}
+When given command line arguments for the names of files containing programs, \texttt{interp} executes them in the order given, then terminates.
+
+\paragraph{Arguments and return codes.} The server should impose the following restrictions on command line arguments:
+\begin{itemize}
+\item Command line arguments cannot exceed 4096 characters each.
+\item The port number should be between 1024 and 65535, in decimal without leading 0's.
+\item The password may contain alphanumeric characters, spaces, commas, semi-colons, periods, question marks, exclamation points, hyphens, and underscores, but \emph{not} tabs or newlines.
+\end{itemize}
+The server should implement the following conventions for return codes:
+\begin{itemize}
+\item When invalid command-line arguments are received, the server should terminate with status code 255. 
+\item When the server cleanly terminates, it should return status code 0.
+\item When the port number given on the command line is taken, the server should exit with code 63.
+\end{itemize}
+
+\subsection*{Scripting Language: Syntax}
+
+A script always begins with a line identifying the principal and their password. For example, the following line identifiers the administrator, attempting to login with the password ``admin''. Each subsequent line contains a \emph{primitive command} that is executed on behalf of the principal. Scripts always end with three asterisk characters on their own line.
+
+The context-free grammar below is a complete description of the scripting language. Each rule consists of a non-terminal identifier, given in bold-face font and surrounded by angular brackets (e.g., $\langle\mathbf{cmd}\rangle$), followed by one or more production rules. Elements in typewriter font (e.g., $\mathtt{exit}$) are terminals, and correspond to keywords and punctuation required by the language. Elements in italics are tokens, and we use the following convention:
+\begin{itemize}
+\item $s$ indicates a string constant surrounded by a pair of double quotes. String constants may contain alphanumeric characters, spaces, commas, semi-colons, periods, question marks, exclamation points, hyphens, and underscores, but \emph{not} tabs or newlines.
+\item $x,p,q,r,y$ indicates an identifier. Identifiers must be unique from any of the keywords (typewriter-face non-terminals in the grammar below) in the language, must start with an alphabetic character, and may contain alphanumeric characters in addition to underscores.
+\item $\mathtt{\escape{n}}$ refers to the newline character (note: $\mathtt{\escape{r}}$ is not supported).
+\end{itemize}
+The language has the following limits on the length of various entities. Programs that fail to match the grammar, or violate any of the limits, are non-compliant and must result in failure. These failures take precedence over security violations in the program. The server should indicate such a failure by returning a $\{\mathtt{``status": ``FAILED"}\}$ response.
+\begin{itemize}
+\item Programs must consist of no more than 1,000,000 ASCII (8-byte) characters.
+\item String constants must consist of no more than 65,535 ASCII (8-byte) characters.
+\item Identifiers must consist of no more than 255 ASCII (8-byte) characters.
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{lcl}
+$\langle\mathbf{prog}\rangle$ & ::= & $\mathtt{as\ principal\ } \mathit{p}\ \mathtt{password}\ \mathit{s}\ \mathtt{do}\ \mathtt{\escape{n}}\ \langle\mathbf{cmd}\rangle\ \mathtt{***}$
+\\
+$\langle\mathbf{cmd}\rangle$ & ::= & 
+$\mathtt{exit\ \escape{n}}$ 
+$|$ $\mathtt{return\ } \langle\mathbf{expr}\rangle\ \escape{n}$ 
+$|$ $\langle\mathbf{prim\_cmd}\rangle\ \mathtt{\escape{n}}\ \langle\mathbf{cmd}\rangle$
+\\
+$\langle\mathbf{prim\_cmd}\rangle$ & ::= &
+$\mathtt{create\ principal}\ \mathit{p}\ \mathit{s}$ \\
+& $|$ & $\mathtt{change\ password}\ \mathit{p}\ \mathit{s}$ \\
+& $|$ & $\mathtt{set}\ \mathit{x}\ =\ \langle\mathbf{expr}\rangle$ \\
+& $|$ & $\mathtt{append\ to}\ \mathit{x}\ \mathtt{with}\ \langle\mathbf{expr}\rangle$ \\
+& $|$ & $\mathtt{filtereach}\ \mathit{y}\ \mathtt{in}\ \mathit{x}\ \mathtt{with}\ \langle\mathbf{expr}\rangle$ \\
+$\langle\mathbf{expr}\rangle$ & ::= & $\langle\mathbf{value}\rangle$ $|$ \texttt{[]} $|$ $\{\langle\mathbf{fieldvals}\rangle\}$ \\
+& $|$ & $\mathtt{if}\ \langle\mathbf{bool\_expr}\rangle\ \mathtt{then}\ \langle\mathbf{expr}\rangle\ \mathtt{else}\ \langle\mathbf{expr}\rangle$ \\
+$\langle\mathbf{bool\_expr}\rangle$ & ::= & $\mathtt{true}$ $|$ $\mathtt{false}$ $|$ $\mathtt{equal}(\langle\mathbf{value}\rangle,\langle\mathbf{value}\rangle)$ $|$ $\mathtt{notequal}(\langle\mathbf{value}\rangle,\langle\mathbf{value}\rangle)$
+\\
+$\langle\mathbf{fieldvals}\rangle$ & ::= & $x = \langle\mathbf{value}\rangle$ $|$ $x = \langle\mathbf{value}\rangle, \langle\mathbf{fieldvals}\rangle$
+\\
+$\langle\mathbf{value}\rangle$ & ::= & $x$ $|$ $x\mathtt{.}y$ $|$ $s$ \\
+% <value> ::=  x | x . y | s
+\end{tabular}
+\end{center}
+
+\subsection*{Semantics} 
+
+The state of the system is divided into the \emph{store} and \emph{security state}. The store is a mapping from variable identifiers to literal values. The security state is a mapping from variable identifiers to access rights, as well as a mapping from principal identifiers to password strings. The system is preconfigured with principal admin whose password is given by the second command-line argument; or ``admin'' if that password is not given.
+
+\paragraph{Transactional execution.} Until all commands in the body are executed, the server must maintain a transaction containing all updates to state made by the program. Whenever the server returns either $\mathtt{FAILED}$ or $\mathtt{DENIED}$ status, all changes to state made by the current program are aborted. If the program finishes without returning either of these statuses, then the server should commit the program's state updates so that programs executed subsequently can see the updates.
+
+\paragraph{Programs.} A program $\mathtt{as\ principal\ } \mathit{p}\ \mathtt{password}\ \mathit{s}\ \mathtt{do}\ \mathtt{\escape{n}}\ \langle\mathbf{cmd}\rangle\ \mathtt{***}$ has the following semantics:
+\begin{itemize}
+\item Fails with $\{\mathtt{``status": ``FAILED"}\}$ if $p$ is not a principal in the system.
+\item Returns $\{\mathtt{``status": ``DENIED"}\}$ if $s$ is the wrong password for $p$.
+\item Otherwise, executes $\langle\mathbf{cmd}\rangle$ under the authority of $p$, terminating the connection afterwards.
+\end{itemize}
+
+\paragraph{Commands.} A command consists of zero or more primitive commands, ending with either $\mathtt{return}$ or $\mathtt{exit}$. Each successfully executed command (including primitive commands described below) results in a JSON-formatted status message being returned to the client. We describe the semantics of primitive commands below, and the two terminating commands here:
+\begin{itemize}
+\item To execute $\mathtt{exit}$, the server returns $\{\mathtt{``status": ``EXITING"}\}$, terminates the client connection, and halts the server with status code 0. This command is only allowed to execute on behalf of $\mathtt{admin}$. If a principal other than $\mathtt{admin}$ attempts to execute it, the server returns $\{\mathtt{``status": ``DENIED"}\}$.
+\item To execute $\mathtt{return} \langle\mathbf{expr}\rangle$, the server evaluates the expression, returns status $\mathtt{``RETURNING''}$, and the JSON representation of the result keyed under $\mathtt{``output''}$.
+\end{itemize}
+
+\paragraph{Primitive commands.} Primitive commands typically comprise most of the body of a program. Commands may include expressions, whose semantics are given below. If an expression fails or results in a security violation, then the containing expression does as well.
+\begin{itemize}
+\item $\mathtt{create\ principal}\ \mathit{p}\ \mathit{s}$. Updates the security state to include a new principal $p$ with password corresponding to the string constant $s$.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item $p$ already exists as a principal
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item Current principal is not $\mathtt{admin}$
+\end{itemize}
+\item[Successful status code:] $\mathtt{CREATE\_PRINCIPAL}$
+\end{description}
+
+\item $\mathtt{change\ password}\ \mathit{p}\ \mathit{s}$. Updates the security state to set principal $p$'s password to $\mathit{s}$.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item $p$ does not exist as a principal
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item Current principal is not $\mathtt{admin}$ or $p$
+\end{itemize}
+\item[Successful status code:] $\mathtt{CHANGE\_PASSWORD}$
+\end{description}
+
+\item $\mathtt{set}\ \mathit{x}\ =\ \langle\mathbf{expr}\rangle$. Updates global variable $x$ in the store to map to the result of evaluating $\langle\mathbf{expr}\rangle$. If $x$ does not already exist, this command creates it.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item Evaluating $\langle\mathbf{expr}\rangle$ results in failure.
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item Current principal does not have $\mathtt{write}$ permissions on $x$.
+\end{itemize}
+\item[Successful status code:] $\mathtt{SET}$
+\end{description}
+
+\item $\mathtt{append\ to}\ \mathit{x}\ \mathtt{with}\ \langle\mathbf{expr}\rangle$.
+If $x$ evaluates to a list, then the result of evaluating $\langle\mathbf{expr}\rangle$ is concatenated to it.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item $x$ is not defined.
+\item Evaluating $x$ results in a value other than a list.
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item Current principal does not have either $\mathtt{write}$ or $\mathtt{append}$ permissions on $x$.
+\end{itemize}
+\item[Successful status code:] $\mathtt{APPEND}$
+\end{description}
+
+\item $\mathtt{filtereach}\ \mathit{y}\ \mathtt{in}\ \mathit{x}\ \mathtt{with}\ \langle\mathbf{bool\_expr}\rangle$. For each element $y$ in list $x$, evaluate $\langle\mathbf{bool\_expr}\rangle$ with $y$ bound to the current element of $x$. If the expression evaluates to \false, then remove it from $x$. Otherwise, it remains in $x$.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item $x$ does not exist.
+\item Evaluating $x$ results in a value other than a list.
+\item $y$ is already defined.
+\item If any evaluation of $\langle\mathbf{expr}\rangle$ results in a failure, then this command does.
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item Current principal does not have $\mathtt{read}$ and $\mathtt{write}$ permissions on $x$.
+\item If any evaluation of $\langle\mathbf{expr}\rangle$ results in a security violation, then this command does.
+\end{itemize}
+\item[Successful status code:] $\mathtt{FILTEREACH}$
+\end{description}
+
+\end{itemize}
+
+\paragraph{Expressions.} Expressions evaluate to strings, lists, or records.
+\begin{itemize}
+\item A string is a sequence of ASCII characters obeying the length restrictions described in the previous section. 
+\item A list is a sequence of one or more string or record values. 
+\item A record is an unordered collection of field, value pairs (described by $\langle\{\mathbf{fieldvals}\}\rangle$ in the grammar).
+\end{itemize}
+The evaluation rules for expression constructs are as follows:
+\begin{itemize}
+\item The simplest expression type corresponds to the empty list \texttt{[]}, which evaluates to itself.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item None
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item None
+\end{itemize}
+\end{description}
+\item A string constant $s$ also evaluates to itself.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item None
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item None
+\end{itemize}
+\end{description}
+\item A variable expression $x$ returns the current value of $x$ in the store.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item $x$ does not exist in the store
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item Current principal does not have $\mathtt{read}$ permissions on $x$.
+\end{itemize}
+\end{description}
+\item A field lookup expression $x\mathtt{.}y$ returns the value stored in field $y$ of record $x$.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item $x$ is not a record.
+\item $y$ is not a field of the record $x$.
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item Current principal does not have $\mathtt{read}$ permissions on $x$.
+\end{itemize}
+\end{description}
+\item A record constructor $\{x_1 = \langle\mathbf{value}\rangle,\ldots,x_n = \langle\mathbf{value}\rangle\}$ evaluates to a record with fields $x_1, \ldots, x_n$ that are initialized to the evaluation of their corresponding $\langle\mathbf{value}\rangle$. Field values may contain only strings when evaluated, not arrays or nested records.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item One or more $\langle\mathbf{value}\rangle$ does not evaluate to a string.
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item None
+\end{itemize}
+\end{description}
+\item An if-then-else expression $\mathtt{if}\ \langle\mathbf{bool\_expr}\rangle\ \mathtt{then}\ \langle\mathbf{expr}\rangle\ \mathtt{else}\ \langle\mathbf{expr}\rangle$ first evaluates $\langle\mathbf{bool\_expr}\rangle$ according to the rules for Boolean expression evaluation given below. If the result is \true, then the subexpression corresponding to the $\mathtt{then}$ branch is evaluated and returned. Otherwise, the subexpression corresponding to the $\mathtt{else}$ branch is evaluated and returned.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item If any of the subexpressions fails, then evaluation of this expression fails.
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item If any of the subexpressions results in a security violation, then this expression does as well.
+\end{itemize}
+\end{description}
+\end{itemize}
+
+\paragraph{Boolean expressions.} Boolean expressions evaluate to either \true or \false.
+\begin{itemize}
+\item The constants $\mathtt{true}$ and $\mathtt{false}$ evaluate to \true and \false, respectively.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item None
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item None
+\end{itemize}
+\end{description}
+\item The expression $\mathtt{equal}(\langle\mathbf{value}\rangle,\langle\mathbf{value}\rangle)$ evaluates to \true if the arguments evaluate to the same value, and \false otherwise.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item Evaluating either argument results in failure.
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item Evaluating either argument results in a security violation.
+\end{itemize}
+\end{description}
+\item Similarly, the expression $\mathtt{notequal}(\langle\mathbf{value}\rangle,\langle\mathbf{value}\rangle)$ evaluates to \false if the arguments evaluate to the same value, and \true otherwise.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item Evaluating either argument results in failure.
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item Evaluating either argument results in a security violation.
+\end{itemize}
+\end{description}
+\end{itemize}
+
+\subsection*{Security Policy} The server enforces a data access policy on which principals can $\mathtt{read}$, $\mathtt{write}$, and $\mathtt{append}$ to each global variable in the store. The data access policy is uniform across all variables and principals:
+\begin{itemize}
+\item The principal who initially creates a variable is given $\mathtt{read}$, $\mathtt{write}$, and $\mathtt{append}$ permissions.
+\item All other principals who are not $\mathtt{admin}$ are given $\mathtt{read}$ permissions.
+\item $\mathtt{admin}$ is given $\mathtt{read}$, $\mathtt{write}$, and $\mathtt{append}$ permissions on all variables.
+\end{itemize}
+This policy is fixed, and should not change throughout the execution of the server.
+
+Additionally, the server enforces an administrative policy that dictates changes to the security state.
+\begin{itemize}
+\item Only $\mathtt{admin}$ can add new principals.
+\item Only $\mathtt{admin}$ and the principal $p$ can make changes to $p$'s password.
+\item Only $\mathtt{admin}$ can halt the server using $\mathtt{exit}$.
+\end{itemize}
+
+\subsection*{Input and output.} The server should read an input program until receiving three consecutive asterisks, as described in the grammar. All input after the terminating asterisks should be ignored. On receiving an incomplete program, the server can do any of the following:
+\begin{itemize}
+\item It can process the commands that it has received so far, and return $\{\mathtt{``status": ``FAILED"}\}$ or $\{\mathtt{``status": ``DENIED"}\}$ if any command results in a failure or security violation.
+\item It can hang while waiting for the terminating sequence of asterisks.
+\item It can timeout after 30 seconds of not receiving the terminating sequence of asterisks. In this case, it should output $\{\mathtt{``status": ``TIMEOUT"}\}$ and begin waiting for a new connection.
+\end{itemize}
+All output produced by the server should be in JSON format as follows:
+\begin{itemize}
+\item Each command's JSON output should be printed on a single line, ending with $\mathtt{\escape{n}}$.
+\item Each JSON output should contain a $\mathtt{'status'}$ key containing the status code of the command (e.g., $\mathtt{CREATE\_PRINCIPAL}$, $\mathtt{SET}$, etc.).
+\item The output of a $\mathtt{return}\ \langle\mathbf{expr}\rangle$ command contains $\mathtt{status}$ $\mathtt{RETURNING}$, as well as an additional key $\mathtt{output}$ that contains the result of evaluating $\langle\mathbf{expr}\rangle$. If $\langle\mathbf{expr}\rangle$ is a string, then this value is a JSON string. If $\langle\mathbf{expr}\rangle$ is a record, then this is a JSON record. If $\langle\mathbf{expr}\rangle$ is a list, then this is a JSON array.
+\end{itemize}
+For more information on the JSON format, consult \url{http://json.org}. The code handout also contains facilities for producing JSON output in $\mathtt{Interp.ResponseToJSON}$.
+
+\section*{Code Handout}
+
+Note that before attempting to compile the skeleton, you should ensure that the \texttt{yojson} package is installed and accessible by your Ocaml installation. You can check this by running the command \texttt{opam list}, and looking for the relevant package. If you do not have it installed, then run \texttt{opam install yojson}.
+
+The $\mathtt{code}$ directory contains the following files:
+
+\dirtree{%
+.1 code/.
+.2 tests/.
+.3 basic\_append.
+.3 basic\_append.expected.
+.3 ....
+.2 Makefile.
+.2 aeson.ml.
+.2 ast.ml.
+.2 auth.ml.
+.2 cmdline.ml.
+.2 interp.ml.
+.2 lexer.mll.
+.2 parser.mly.
+.2 rlist.ml.
+.2 server.ml.
+.2 state.ml.
+}
+
+\noindent
+The $\mathtt{tests}$ directory contains, unsurprisingly, a number of initial test cases containing examples and their expected output. The remaining files contain the following:
+\begin{description}
+\item[\texttt{Makefile}] Standard makefile configured to produce the necessary binaries (\texttt{interp}, \texttt{server}). You should not need to modify this unless you decide to add additional source files to your implementation.
+
+\item[\texttt{aeson.ml}] Functions for formatting JSON output.
+
+\item[\texttt{ast.ml}] Type definitions and helper funtions for working with abstract syntax trees of parsed programs.
+
+\item[\texttt{auth.ml}] Currently empty. This is the recommended location for defining the types and functions needed to implement the server's security policy.
+
+\item[\texttt{cmdline.ml}] Entry point for the debugging shell \texttt{interp}. Processes command line arguments as described in the previous section.
+
+\item[\texttt{interp.ml}] Intended to contain the language interpreter. This is the core server functionality. At the moment, this provides basic types for response codes, JSON formatting facilities, and skeleton code for the main interpreter. 
+
+\item[\texttt{lexer.mll}] \texttt{ocamllex} lexer definition for the language grammar. You should not need to modify this.
+
+\item[\texttt{parser.mly}] \texttt{ocamlyacc} parser definition for the language grammar. You should not need to modify this.
+
+\item[\texttt{rlist.ml}] A type definition and basic \texttt{map}, \texttt{append}, and \texttt{filter} functions for a list that can be configured to store elements either right-to-left or left-to-right. This is used by \texttt{ast.ml}.
+
+\item[\texttt{server.ml}] Entry point for the main server binary \texttt{server}. Establishes a listening TCP socket on the port specified via the command line, and passes incoming data to the interpreter.
+
+\item[\texttt{state.ml}] Intended to house the types and helper functions needed to manage the server's state.
+\end{description}
+
+\end{problem}
+
+\newpage
+\begin{problem}{Develop a test suite (20 points)}
+
+For the second part of the assignment, you will develop a comprehensive test suite to demonstrate that your implementation matches the specification. In particular, you want to make sure that your server outputs JSON responses, returns with the appropriate values, enforces the security policy and input restrictions, as given in the specification. 
+
+To complete this part of the assignment, create a series of tests in the \texttt{tests} directory named $\mathtt{test-}n$, where $n$ is an integer starting at 1. You should also provide a corresponding $\mathtt{test-}n\mathtt{.expected}$ containing the expected correct output for each test case. Update the source for this document by uncommenting the section at the end, in the section ``Test case documentation'', and for each test explain:
+\begin{itemize}
+\item What aspect of the specification, or correctness in general, the test is meant to address.
+\item The way in which it accomplishes that goal.
+\item Whether the test uncovered a bug in your implementation at any point.
+\end{itemize}
+
+You are not required to provide a set number of test cases, but keep in mind that your implementation for Part 1 will be graded on correctness with respect to the specification. In the following, a ``bug'' is a deviation from some requirement in the spec. Your grade for this part will be factored in the following way:
+\begin{itemize}
+\item For each bug the graders find in your implementation that does \emph{not} have a corresponding test case meant to address it, you will be docked two points in Part 1 and two points in Part 2.
+\item For each bug the graders find corresponding to a spec requirement for which you have one or more test cases, you will be docked one point in Part 1.
+\item \emph{If you turn in fewer than ten test cases}, then for any bug the graders find in your implementation, you will be docked two points in Part 1 and three points in Part 2.
+\end{itemize}
+Note that you should not turn in test cases that are simple transformations of those that have already been provided (e.g., cases that test exactly the same set of features, or simply rename variables and constants).
+
+
+% \newpage
+% \subsection*{Test case documentation}
+%
+%  Add your explanation for each test case here
+%
+% \begin{description}
+% \item[Test 1]
+% \item[Test 2]
+% \item[...]
+% \end{description}
+
+\end{problem}
+
+\end{document}

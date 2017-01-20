@@ -1,0 +1,3 @@
+{"status":"CREATE_PRINCIPAL"}
+{"status":"CHANGE_PASSWORD"}
+{"output":"success","status":"RETURNING"}

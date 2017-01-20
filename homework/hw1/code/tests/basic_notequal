@@ -1,0 +1,4 @@
+as principal admin password "admin" do   
+   set x = if notequal("x", "y") then "success" else "failure"
+   return x
+***

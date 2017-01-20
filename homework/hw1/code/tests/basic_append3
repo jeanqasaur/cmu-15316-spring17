@@ -1,0 +1,6 @@
+as principal admin password "admin" do      
+   set x = "hello "
+   set y = "world"
+   append to x with y
+   return x
+***
