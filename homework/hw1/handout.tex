@@ -433,7 +433,7 @@ The evaluation rules for expression constructs are as follows:
 \subsection*{Security Policy} The server enforces a data access policy on which principals can $\mathtt{read}$, $\mathtt{write}$, and $\mathtt{append}$ to each global variable in the store. The data access policy is uniform across all variables and principals:
 \begin{itemize}
 \item The principal who initially creates a variable is given $\mathtt{read}$, $\mathtt{write}$, and $\mathtt{append}$ permissions.
-\item All other principals who are not $\mathtt{admin}$ are given $\mathtt{read}$ permissions.
+\item All other principals who are not $\mathtt{admin}$ are given $\mathtt{read}$ permissions. Note that this applies to principals who are created after the variable was first initialized, so that new users should be able to read variables already in the server's state.
 \item $\mathtt{admin}$ is given $\mathtt{read}$, $\mathtt{write}$, and $\mathtt{append}$ permissions on all variables.
 \end{itemize}
 This policy is fixed, and should not change throughout the execution of the server.
