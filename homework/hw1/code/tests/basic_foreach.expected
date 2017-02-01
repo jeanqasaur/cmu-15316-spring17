@@ -1,7 +1,0 @@
-{"status":"SET"}
-{"status":"APPEND"}
-{"status":"APPEND"}
-{"status":"APPEND"}
-{"status":"SET"}
-{"status":"FOREACH"}
-{"output":["Alice","Bob","Mallory"],"status":"RETURNING"}
