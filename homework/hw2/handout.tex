@@ -1,0 +1,380 @@
+\documentclass[11pt]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% EDIT THESE TWO COMMANDS TO BE YOUR ANDREW ID AND NAME
+\newcommand*{\stulogin}{}
+\newcommand*{\stuname}{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{fancyhdr}
+\usepackage{fullpage-old}
+\usepackage{framed}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\newcommand*{\assignmentnumb}{2}
+
+\newcommand*{\escape}[1]{\expandafter\string\csname #1\endcsname}
+% ---------------------------------------------------------------------------
+
+\lhead[{\bfseries 15-316\quad Assignment \assignmentnumb\ \ \ \stulogin}]{{\bfseries 15-316\quad Assignment \assignmentnumb\ \ \ \stulogin}}
+\rhead[{\bfseries\thepage}]{{\bfseries\thepage}}
+\pagestyle{fancy}
+\parskip 1ex
+\parindent 0mm
+
+% -----------Danny's Macros-------------
+
+\newcommand{\problem}[1]{\section{#1}\vspace{-1em}}
+\newcounter{partnumber}
+\newenvironment{parts}{\begin{list}{
+      % \arabic{problemnumber}\alph{partnumber}:}{
+      (\alph{partnumber})}{
+      \usecounter{partnumber} \setlength{\rightmargin}{\leftmargin}}
+    \setlength{\itemsep}{.0 in}}{
+  \end{list} \vspace*{.0 in}}
+
+% ---------------------------------------
+
+\newcommand{\pr}{\mathrm{Principal}}
+\newcommand{\pw}{\mathrm{Password}}
+\newcommand{\var}{\mathrm{Variable}}
+\newcommand{\rt}{\mathrm{Right}}
+
+\begin{document}
+
+\centerline{Instructors: Matt Fredrikson, Jean Yang \hfill TA: Samuel Yeom} 
+\vspace{0.5ex}
+Due date: 2/17/2017 at 11:59pm \\
+\vspace{1.5ex}
+\centerline{\Large\bf Assignment \assignmentnumb}
+\vspace{0.5ex}
+\centerline{\Large\bf \stuname}
+
+In the previous assignment, you implemented a simple policy where only \texttt{admin} or the owner of a variable could write to it, and anyone else could read from it. In this assignment, you will add support for more nuanced policies that principals can change over time.
+
+First, we provide a specification of the policy language. We provide theoretical exercises to help you understand the policy model, and then we ask you to implement the policy model. We will tell you exactly what you will need to add to your previous implementation, so read carefully!
+
+\paragraph{Policy model.}
+The policy model associates principals and variables with permissions. We represent the permissions as follows:
+
+$\langle\mathbf{right}\rangle ::= \texttt{read} \mid \texttt{append} \mid \texttt{write} \mid \texttt{delegate}$
+
+If a capability is not explicitly given for a permission in this description, then it is not granted by that permission. 
+We describe the permissions below:
+\begin{description}
+\item[\texttt{read}:] If principal $p$ has \texttt{read} permission on $x$, then $p$ is allowed to refer to $x$ in an expression.
+\item[\texttt{append}:] If a principal $p$ has \texttt{append} permission on $x$, and $x$ evaluates to a list, then $p$ is allowed to concatenate items to the value referenced by $x$.
+\item[\texttt{write}:] If principal $p$ has \texttt{write} permission on $x$, then $p$ is allowed to make arbitrary changes to $x$ in a command. Note that \texttt{write} permissions grant strictly more capability than \texttt{append}: any command that requires \texttt{append} permission can be executed if the principal has \texttt{write} permission instead on the variable in question.
+\item[\texttt{delegate}:] If a principal $p$ has \texttt{delegate} permission on $x$, then $p$ is allowed to grant or revoke permissions on $x$ for other principals in the system.
+\end{description}
+Permissions are additive and, with the exception of \texttt{append} and \texttt{write}, distinct in the capabilities they grant. A principal with only \texttt{read} access to $x$ is unable to change it in any way or delegate permissions. A principal with only \texttt{write} access is able to change or append to $x$, but unable to read or delegate permissions on it. In order to read and make changes to $x$, the principal needs \emph{both} \texttt{read} and \texttt{write} permissions.
+
+The set of principals in the system correspond to identifier strings. (See Homework 1 for restrictions on the set of allowed principal identifiers). There are two default principals that must be present on the server:
+\begin{description}
+\item[\texttt{admin}:] The administrator is granted full permissions on any variable in the system, as well as the ability to add new principals and terminate the server.
+\item[\texttt{anyone}:] The \texttt{anyone} principal is used to grant permissions to all users on the system. A principal $p$ has permission $\langle\mathbf{right}\rangle$ on $x$ if principal \texttt{anyone} has that permission on $x$.
+\end{description}
+For a full description of which permissions are required to execute each primitive command, consult the handout for Assignment 1, and in particular the portions with the header \textbf{Security violations}. Note that two commands that you have already implemented have semantics that are updated in the following section.
+
+\paragraph{Language updates.}
+To prevent collisions when naming principals in commands, you should update your implementation of the \texttt{create principal} command as follows:
+\begin{description}
+\item[$\mathtt{create\ principal}\ \mathit{p}\ \mathit{s}$:] Updates the security state to include a new principal $p$ with password corresponding to the string constant $s$.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item $p$ already exists as a principal; this includes the case where $p$ is \texttt{anyone}.
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item Current principal is not $\mathtt{admin}$
+\end{itemize}
+\item[Successful status code:] $\mathtt{CREATE\_PRINCIPAL}$
+\end{description}
+\end{description}
+
+\begin{description}
+\item[$\mathtt{set}\ \mathit{x}\ =\ \langle\mathbf{expr}\rangle$:] Updates global variable $x$ in the store to map to the result of evaluating $\langle\mathbf{expr}\rangle$. If $x$ does not already exist, this command creates it. The principal who successfully executes this command is given \texttt{read}, \texttt{append}, \texttt{write}, and \texttt{delegate} permissions on $x$.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item Evaluating $\langle\mathbf{expr}\rangle$ results in failure.
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item $x$ already exists in the server state, and the current principal does not have $\mathtt{write}$ permissions on $x$.
+\item Evaluating $\langle\mathbf{expr}\rangle$ results in a security violation.
+\end{itemize}
+\item[Successful status code:] $\mathtt{SET}$
+\end{description}
+\end{description}
+
+To support user-defined policies, you will add support for two new primitive commands:
+\begin{description}
+\item[\texttt{set delegation} $x$ $\langle\mathbf{right}\rangle$ \texttt{->\ } $p$:] Updates the access control policy so that principal $p$ is given permission $\langle\mathbf{right}\rangle$ on variable $x$.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item $p$ does not exist as a principal.
+\item $x$ does not exist as a variable.
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item The current principal $p_c$ invoking the command satisfies either of the following:
+\begin{enumerate} 
+\item $p_c$ is not $\mathtt{admin}$.
+\item $p_c$ does not have \texttt{delegate} permissions on the variable $x$.
+\end{enumerate}
+\end{itemize}
+\item[Successful status code:] $\mathtt{SET\_DELEGATION}$
+\end{description}
+
+\item[\texttt{delete delegation} $x$ $\langle\mathbf{right}\rangle$ \texttt{->\ } $p$:] Updates the access control policy so that principal $p$ no longer has permission $\langle\mathbf{right}\rangle$ on variable $x$. If $p$ does not currently have $\langle\mathbf{right}\rangle$ permission on $x$, then the command has no effect.
+\begin{description}
+\item[Failure conditions:]\ \\[-1.5em]
+\begin{itemize}
+\item $p$ does not exist as a principal.
+\item $x$ does not exist as a variable.
+\end{itemize}
+\item[Security violations:]\ \\[-1.5em]
+\begin{itemize}
+\item The current principal $p_c$ invoking the command satisfies either of the following:
+\begin{enumerate} 
+\item $p_c$ is not $\mathtt{admin}$.
+\item $p_c$ does not have \texttt{Delegate} permissions on the variable $x$.
+\end{enumerate}
+\end{itemize}
+\item[Successful status code:] $\mathtt{DELETE\_DELEGATION}$
+\end{description}
+\end{description}
+
+\paragraph{Formal model.}
+To implement a reference monitor for this policy model, you should use a security automaton as your formal model. The states in the security automaton are defined by the following:
+\begin{itemize}
+	\item $P$, a set of tuples $(p, s)$ where $p$ is a principal and $s$ is a password string.
+	\item $c$, the currently-acting principal.
+	\item $V$, a set of variable identifiers that currently exist on the server.
+	\item $A$, a set of tuples $(p, x, r)$ where $p$ is a principal, $x$ a variable identifier, and $r$ an access permission.
+\end{itemize}
+The initial state of the automaton is:
+\begin{itemize}
+\item $P = \{(\mathtt{admin}, s),(\mathtt{anyone}, \bot)\}$, where $s$ is the administrator's password (given as a command line argument), and $\bot$ is the empty string.
+\item $c = \mathtt{anyone}$, so the server is executing on behalf of \texttt{anyone} until a script presents the correct password credentials for a given principal.
+\item $V = \emptyset$
+\item $A = \emptyset$
+\end{itemize}
+
+The input symbols, and the conditions for which they are generated, are as follows:
+\begin{description}
+	\item[$\mathsf{SetCurrentPrin}(p, s)$:]
+	Script attempts to login as principal $p$ using password $s$.
+	\item[$\mathsf{Oper}(v, r)$:]
+	Current principal invokes and operation that requires permission $r$ on variable $v$.
+	\item[$\mathsf{AddRight}(p, v, r)$:]
+	Current principal delegates permission $r$ on variable $v$ to principal $p$.
+	\item[$\mathsf{RemoveRight}(p, v, r)$:]
+	Current principal revokes permission $r$ on variable $v$ from principal $p$.
+	\item[$\mathsf{AddPrincipal}(p, s)$:]
+	Current principal creates a new principal named $p$ with password $s$.
+	\item[$\mathsf{UpdatePrincipal}(p, s)$:]
+	Current principal updates principal $p$'s password to $s$.
+	\item[$\mathsf{AddVariable}(v)$:]
+	Current principal creates a variable named $v$.
+	\item[$\mathsf{Terminate}$:]
+	Current principal attempts to terminate the server.
+\end{description}
+
+\newpage
+\begin{problem}{Transition function}
+The security automaton (partially) defined above reads input symbols that correspond to policy-relevant actions. For this problem, you need to define the transition function that encodes the policy described earlier in the \textbf{policy model} section. That is, for each input symbol, describe which states the symbol is allowed to execute in, and what state the automaton should be in afterwards. 
+
+To get you started, we've filled in the transition for the first symbol, $\mathsf{SetCurrentPrin}(p, s)$. Complete the problem by filling in the transition function for the remaining symbols. Note that you can use arbitrary formulas when specifying states in your description; see the \href{https://www.cs.cornell.edu/fbs/publications/EnfSecPols.pdf}{\emph{Enforceable Security Policies}} paper by Schneider for more examples of textual automaton descriptions. You should modify the source file for this document directly, replacing the placeholder comments with your solution.
+
+\subsection*{Solution}
+
+\begin{parts}
+	\item $\mathsf{SetCurrentPrin}(p, s)$
+		\begin{description}
+		\item[\textbf{Start state}:] $(p, s) \in P$ (a transition only exists if $p$ is a principal in the current state and $s$ is the correct password for that principal)
+		\item[\textbf{End state}:]\ 
+			\begin{itemize}
+				\item $P := P$ (no change)
+				\item $c := p$ (set current principal to $p$)
+				\item $V := V$ (no change)
+				\item $A := A$ (no change)
+			\end{itemize}
+		\end{description}
+	\item $\mathsf{Oper}(v, r)$
+		% \begin{description}
+		% \item[\textbf{Start state}:] % fill in your answer here
+		% \item[\textbf{End state}:] % fill in your answer here
+		% \end{description}
+	\item $\mathsf{AddRight}(p, v, r)$
+		% \begin{description}
+		% \item[\textbf{Start state}:] % fill in your answer here
+		% \item[\textbf{End state}:] % fill in your answer here
+		% \end{description}
+	\item $\mathsf{RemoveRight}(p, v, r)$
+		% \begin{description}
+		% \item[\textbf{Start state}:] % fill in your answer here
+		% \item[\textbf{End state}:] % fill in your answer here
+		% \end{description}
+	\item $\mathsf{AddPrincipal}(p, s)$
+		% \begin{description}
+		% \item[\textbf{Start state}:] % fill in your answer here
+		% \item[\textbf{End state}:] % fill in your answer here
+		% \end{description}
+	\item $\mathsf{UpdatePrincipal}(p, s)$
+		% \begin{description}
+		% \item[\textbf{Start state}:] % fill in your answer here
+		% \item[\textbf{End state}:] % fill in your answer here
+		% \end{description}
+	\item $\mathsf{AddVariable}(v)$
+		% \begin{description}
+		% \item[\textbf{Start state}:] % fill in your answer here
+		% \item[\textbf{End state}:] % fill in your answer here
+		% \end{description}
+	\item $\mathsf{Terminate}$
+		% \begin{description}
+		% \item[\textbf{Start state}:] % fill in your answer here
+		% \item[\textbf{End state}:] % fill in your answer here
+		% \end{description}		
+\end{parts}
+
+\end{problem}
+
+\newpage
+\begin{problem}{Mediation points}
+	Now you are almost ready to implement the security automaton as a reference monitor for the server. But we first need to specify how the security automaton interacts with the server's functionality. For each construct in the scripting language syntax, identify which input symbols must be generated by a correct implementation to ensure complete mediation. 
+
+	To get you started, we've filled in the answer for one of the commands. Note that you do not need to list the symbols generated by nested subparts of the syntactic elements. For example, \texttt{return} has a nested $\langle\mathbf{expr}\rangle$ subpart. When providing your answer for \texttt{return}, you do not need to list the symbols that could be generated when $\langle\mathbf{expr}\rangle$ is evaluated.
+
+\subsection*{Solution}
+
+\begin{parts}
+\item $\mathtt{as\ principal\ } \mathit{p}\ \mathtt{password}\ \mathit{s}\ \mathtt{do}\ \mathtt{\escape{n}}\ \langle\mathbf{cmd}\rangle\ \mathtt{***}$
+	\begin{itemize}
+	\item $\mathsf{SetCurrentPrin}(p, s)$
+	\end{itemize}
+\item $\mathtt{exit}$
+	% \begin{itemize}
+	% \item % add your answer here
+	% \item % second, third, ... symbols if necessary
+	% \end{itemize}
+\item $\mathtt{return}\ \langle\mathbf{expr}\rangle$
+	% \begin{itemize}
+	% \item % add your answer here
+	% \item % second, third, ... symbols if necessary
+	% \end{itemize}
+\item $\mathtt{create\ principal}\ \mathit{p}\ \mathit{s}$
+	% \begin{itemize}
+	% \item % add your answer here
+	% \item % second, third, ... symbols if necessary
+	% \end{itemize}
+\item $\mathtt{change\ password}\ \mathit{p}\ \mathit{s}$
+	% \begin{itemize}
+	% \item % add your answer here
+	% \item % second, third, ... symbols if necessary
+	% \end{itemize}
+\item $\mathtt{set}\ \mathit{x}\ =\ \langle\mathbf{expr}\rangle$
+	% \begin{itemize}
+	% \item % add your answer here
+	% \item % second, third, ... symbols if necessary
+	% \end{itemize}
+\item $\mathtt{append\ to}\ \mathit{x}\ \mathtt{with}\ \langle\mathbf{expr}\rangle$
+	% \begin{itemize}
+	% \item % add your answer here
+	% \item % second, third, ... symbols if necessary
+	% \end{itemize}
+\item $\mathtt{filtereach}\ \mathit{y}\ \mathtt{in}\ \mathit{x}\ \mathtt{with}\ \langle\mathbf{bool\_expr}\rangle$
+	% \begin{itemize}
+	% \item % add your answer here
+	% \item % second, third, ... symbols if necessary
+	% \end{itemize}
+\item Constant expressions: \texttt{[]} (empty list), $s$ (string constant), $\mathtt{true}$, $\mathtt{false}$
+	% \begin{itemize}
+	% \item % add your answer here
+	% \item % second, third, ... symbols if necessary
+	% \end{itemize}
+\item Variable expressions: $x$, $x\mathtt{.}y$
+	% \begin{itemize}
+	% \item % add your answer here
+	% \item % second, third, ... symbols if necessary
+	% \end{itemize}
+\item Record constructor: $\{x_1 = \langle\mathbf{value}\rangle,\ldots,x_n = \langle\mathbf{value}\rangle\}$
+	% \begin{itemize}
+	% \item % add your answer here
+	% \item % second, third, ... symbols if necessary
+	% \end{itemize}
+\item $\mathtt{if}\ \langle\mathbf{bool\_expr}\rangle\ \mathtt{then}\ \langle\mathbf{expr}\rangle\ \mathtt{else}\ \langle\mathbf{expr}\rangle$
+	% \begin{itemize}
+	% \item % add your answer here
+	% \item % second, third, ... symbols if necessary
+	% \end{itemize}
+\item $\mathtt{equal}(\langle\mathbf{value}\rangle,\langle\mathbf{value}\rangle)$, $\mathtt{notequal}(\langle\mathbf{value}\rangle,\langle\mathbf{value}\rangle)$  
+	% \begin{itemize}
+	% \item % add your answer here
+	% \item % second, third, ... symbols if necessary
+	% \end{itemize}
+\end{parts}
+\end{problem}
+
+\newpage
+\begin{problem}{Implement the reference monitor}
+Now that you've formalized a reference monitor and identified the necessary mediation points, update your implementation by adding a reference monitor corresponding to your formalism.
+Whenever executing a command would result in a policy violation, the server should abort all changes made by the current program, update the state of the reference monitor to reflect the aborted changes, and return \texttt{DENIED} status.
+
+To help get you started, we have updated the following parts of the code to provide some of the necessary functionality. Feel free to rewrite these portions, or build on them in your implementation.
+\begin{description}
+\item[\texttt{ast.ml}:] Added cases for \texttt{set delegation} and \texttt{delete delegation} to the \texttt{cmd} type, and added a \texttt{Delegate} constructor to the \texttt{right} type.
+
+\item[\texttt{auth.ml}:] We have added several definitions to \texttt{Auth} that you can choose to build on in your implementation, or rewrite if you would like to do things differently.
+\begin{itemize}
+\item Containers for the automaton state definition given earlier in the handout, and a \texttt{refmon\_state} type that uses the container to define the current reference monitor state.
+\item Two helper functions \texttt{add\_principal} and \texttt{check\_password} that demonstrate working with the containers and updating the automaton state.
+\item An \texttt{input\_symbol} type matching the options for input symbols listed in the security automaton description. 
+\end{itemize}
+
+\item[\texttt{interp.ml}:] Added \texttt{ResponseSetDelegation} and \texttt{ResponseDeleteDelegation} constructors to the \texttt{response} type. Note that you should update your evaluation functions to account for the new \texttt{set delegation} and \texttt{delete delegation} commands, as we have not done this for you.
+
+\item[\texttt{lexer.mll}, \texttt{parser.mly}:] Updated the syntax description to account for the new \texttt{set delegation} and \texttt{delete delegation} commands.
+\end{description}
+
+To implement the reference monitor, we recommend that you proceed as follows:
+\begin{enumerate}
+\item Copy the updates discussed above from the handout code to your current implementation.
+\item Add a function to initialize the automaton state, given the administrator's initial password.
+\item Add functions that take an input symbol and update the automaton state. Use your answer for problem 1 as a guide when implementing these functions.
+\item Using your solution to problem 2 as a guide, locate the corresponding mediation points in your code, and insert calls to functions in \texttt{auth.ml} responsible for processing input symbols and updating automaton state.
+\item At all points, write tests for your implementation!
+\end{enumerate}
+
+\end{problem}
+
+\newpage
+\begin{problem}{Bounded availability}
+	Recall from lecture the example policy informally described as ``no $\mathtt{send}$ after $\mathtt{read}$". Suppose we want to add a restriction that the buffer must eventually become available to other programs. In other words, our program must eventually stop reading.
+	\begin{parts}
+		\item Is our new policy prefix-closed? Why or why not?
+		\item Is our new policy finitely refutable? Why or why not?
+	\end{parts}
+	Because an execution monitor can only enforce policies that are both prefix-closed and finitely refutable, it cannot enforce availability.
+	\begin{parts}
+		\setcounter{partnumber}{2}
+		\item Modify the availability restriction and prove that the resulting policy is both prefix-closed and finitely refutable. Keep in mind that this new restriction is called \emph{bounded} availability.
+	\end{parts}
+
+\subsection*{Solution}
+
+\begin{parts}
+\item % your answer for (a) here
+\item % your answer for (b) here
+\item % your answer for (c) here
+\end{parts}
+
+\end{problem}
+
+\end{document}

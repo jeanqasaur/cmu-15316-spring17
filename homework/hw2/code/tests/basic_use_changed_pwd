@@ -1,0 +1,3 @@
+as principal alice password "alices_new_password" do
+   return "success"
+***

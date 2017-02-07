@@ -1,0 +1,5 @@
+as principal admin password "admin" do
+   create principal alice "alices_password"
+   create principal alice "alices_password"
+   return "success"
+***

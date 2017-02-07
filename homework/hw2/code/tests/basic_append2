@@ -1,0 +1,8 @@
+as principal admin password "admin" do      
+   set x = []
+   set y = []
+   append to x with "first element"
+   append to y with {field = "data", value = "second element"}
+   append to x with y
+   return x
+***
