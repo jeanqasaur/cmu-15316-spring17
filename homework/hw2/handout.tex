@@ -52,6 +52,7 @@ Due date: 2/17/2017 at 11:59pm \\
 \centerline{\Large\bf Assignment \assignmentnumb}
 \vspace{0.5ex}
 \centerline{\Large\bf \stuname}
+\parbox{\textwidth}{\hfill \color{red} Updated on 2/9/2017}
 
 In the previous assignment, you implemented a simple policy where only \texttt{admin} or the owner of a variable could write to it, and anyone else could read from it. In this assignment, you will add support for more nuanced policies that principals can change over time.
 
@@ -123,7 +124,7 @@ To support user-defined policies, you will add support for two new primitive com
 \end{itemize}
 \item[Security violations:]\ \\[-1.5em]
 \begin{itemize}
-\item The current principal $p_c$ invoking the command satisfies either of the following:
+\item The current principal $p_c$ invoking the command satisfies {\color{red} both} of the following:
 \begin{enumerate} 
 \item $p_c$ is not $\mathtt{admin}$.
 \item $p_c$ does not have \texttt{delegate} permissions on the variable $x$.
@@ -141,7 +142,7 @@ To support user-defined policies, you will add support for two new primitive com
 \end{itemize}
 \item[Security violations:]\ \\[-1.5em]
 \begin{itemize}
-\item The current principal $p_c$ invoking the command satisfies either of the following:
+\item The current principal $p_c$ invoking the command satisfies {\color{red} both} of the following:
 \begin{enumerate} 
 \item $p_c$ is not $\mathtt{admin}$.
 \item $p_c$ does not have \texttt{Delegate} permissions on the variable $x$.
