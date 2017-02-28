@@ -16,7 +16,7 @@
 \usepackage{xspace}
 \usepackage{mathpartir}
 
-\newcommand*{\assignmentnumb}{2}
+\newcommand*{\assignmentnumb}{3}
 
 \newcommand*{\escape}[1]{\expandafter\string\csname #1\endcsname}
 % ---------------------------------------------------------------------------
@@ -63,6 +63,7 @@ Due date: March 7 at 11:59pm \\
 \centerline{\Large\bf Assignment \assignmentnumb}
 \vspace{0.5ex}
 \centerline{\Large\bf \stuname}
+\parbox{\textwidth}{\hfill \color{red} Last updated on February 27}
 
 To give some of the class a chance to polish their servers from previous assignments, this homework consists of only written exercises. There is also an optional extra credit proof.
 
@@ -70,7 +71,7 @@ This homework is based on the following scenario. Suppose that members of the cl
 
 You will first work through some theoretical exercises about access control logic and proof-carrying code, and then you will design a system that is secure in this scenario.
 
-\begin{problem}{Access control logic}
+\begin{problem}{Access control logic (14 points)}
 Recall the access control logic presented in lecture:
 
 \[
@@ -105,14 +106,14 @@ In order to convince principal $p$ to run the extension, we must be able to prov
 p.\trusted\ \says\ \act(\run).
 \end{equation}
 \begin{parts}
-	\item The course staff needs to vouch for \steve's key, so that other students can trust that statements signed by \steve's key represent his statements. To do so, it will issue a certificate of the form:   
+	\item (2 points) The course staff needs to vouch for \steve's key, so that other students can trust that statements signed by \steve's key represent his statements. To do so, it will issue a certificate of the form:   
 	\[ K_{\ca}\ \signed\ (\underline{\hspace{1cm}}\ \speaksfor\ \underline{\hspace{1cm}}). \]
 	Fill in the blanks in the above statement.
-	\item Even with the voucher from \ca, we still cannot prove Statement~\ref{eqn:want} because we do not have any policies about $p.\trusted$. What policy does $p$ need to complete the proof?
-	\item Use the statements from parts (a) and (b), along with Statement~\ref{eqn:given}, to complete the proof. For each step of the proof, state the inference rule used.
-	\item Now we consider another certificate authority called \hub. \hub.\students is a group of all CMU students. What does $K_\hub$ sign to represent the fact that \steve is a member of \hub.\students?
-	\item $p$ wants a policy that says any CMU student is trustworthy. What statement should we add?
-	\item Use the statements from parts (d) and (e), along with Statement~\ref{eqn:given}, to prove Statement~\ref{eqn:want}. For each step of the proof, state the inference rule used.
+	\item (2 points) Even with the voucher from \ca, we still cannot prove Statement~\ref{eqn:want} because we do not have any policies about $p.\trusted$. What policy does $p$ need to complete the proof?
+	\item (4 points) Use the statements from parts (a) and (b), along with Statement~\ref{eqn:given}, to complete the proof. For each step of the proof, state the inference rule used.
+	\item (1 point) {\color{red} Now we consider another principal called \hub, who simply says statements rather than signing them. This is bad practice because anyone can impersonate \hub, but we will ignore that issue for now. \hub.\students is a group of all CMU students. What does \hub say to represent the fact that \steve is a member of \hub.\students?}
+	\item (1 point) $p$ wants a policy that says any CMU student is trustworthy. What statement should we add?
+	\item (4 points) Use the statements from parts (d) and (e), along with Statement~\ref{eqn:given}, to prove Statement~\ref{eqn:want}. For each step of the proof, state the inference rule used.
 \end{parts}
 
 \subsection*{Solution}
@@ -126,7 +127,7 @@ p.\trusted\ \says\ \act(\run).
 \end{parts}
 \end{problem}
 \newpage
-\begin{problem}{Proof-carrying code}
+\begin{problem}{Proof-carrying code (20 points)}
 The certificate authorities help with not running code from untrusted sources, but there may be some clumsy programmers at CMU, in your class, or even among your trusted friends. With type-safe languages like OCaml, this is less of a problem, but imagine a scenario where a classmate decides to write optimized C code, thus introducing all kinds of potential memory errors.
 
 In this problem, you will work with proof-carrying code to make sure that there are no array out-of-bounds or null pointer access issues in compiled extension modules.
@@ -134,9 +135,10 @@ In this problem, you will work with proof-carrying code to make sure that there 
 \emph{This problem is based on 5.1-5.2 from the Pierce reading, included with the assignment. We will be reviewing the typing rules on Tuesday, February 28.}
 
 \begin{parts}
-	\item Add a new array type constructor to the safety policy and write the proof rules for its usage. An array is represented as a pointer to a memory area that contains the number of elements in the array in the first word and then the array elements in order. Consider the case where each element is a word type.
-	\item Discuss how soundness would work with respect to this type system.
-	\item \textbf{Extra credit:} Provide a proof of soundness of the new rules. (See the ``Soundness of the Safety Policy" section of the chapter.)
+	\item (6 points) Add a new array type constructor to the safety policy and write the proof rules for its usage. An array is represented as a pointer to a memory area that contains the number of elements in the array in the first word and then the array elements in order. Consider the case where each element is a word type.
+	\item (2 points) Discuss how the proof of soundness would need to change to accommodate this new rule.
+        \item (10 points) \textcolor{red}{Provide the proofs for the \textsc{Set}, \textsc{This}, \textsc{Sel}, and \textsc{Upd} cases of Safety Policy soundness.}
+	\item \textbf{Extra credit (8 points):} Provide a proof of soundness of the new rules for the Safety Policy. (See the ``Soundness of the Safety Policy" section of the chapter.)
 \end{parts}
 
 \subsection*{Solution}
@@ -147,7 +149,7 @@ In this problem, you will work with proof-carrying code to make sure that there 
 \end{parts}
 \end{problem}
 \newpage
-\begin{problem}{Designing a secure system}
+\begin{problem}{Designing a secure system (18 points)}
 Now you will consider the trade-offs of the following methods for designing a secure extension framework for the server:
 \begin{itemize}
 	\item Proof-carrying authentication using access control logic (Problem 1)
@@ -155,14 +157,14 @@ Now you will consider the trade-offs of the following methods for designing a se
 	\item Software fault isolation (from lecture)
 \end{itemize}
 \begin{parts}
-	\item For each of the above methods, state what needs to be implemented on the server and what the authors of the extension modules need to do.
-	\item Discuss how each of the above methods contributes to the following security principles:
+	\item (6 points) For each of the above methods, state what needs to be implemented on the server and what the authors of the extension modules need to do.
+	\item (6 points) Discuss how each of the above methods contributes to the following security principles:
 	\begin{enumerate}
 		\item Complete mediation
 		\item Smallest trusted computing base
 		\item Least privilege
 	\end{enumerate}
-	\item If you had to pick two of the three methods for the server, which would you choose, and why? Would your answer change if you were building an extension framework for Chrome?
+	\item (6 points) If you had to pick two of the three methods for the server, which would you choose, and why? Would your answer change if you were building an extension framework for Chrome?
 \end{parts}
 
 \subsection*{Solution}
