@@ -1,0 +1,160 @@
+\documentclass[11pt]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% EDIT THESE TWO COMMANDS TO BE YOUR ANDREW ID AND NAME
+\newcommand*{\stulogin}{}
+\newcommand*{\stuname}{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{fancyhdr}
+\usepackage{fullpage-old}
+\usepackage{framed}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathpartir}
+
+\newcommand*{\assignmentnumb}{4}
+
+\newcommand*{\escape}[1]{\expandafter\string\csname #1\endcsname}
+% ---------------------------------------------------------------------------
+
+\lhead[{\bfseries 15-316\quad Assignment \assignmentnumb\ \ \ \stulogin}]{{\bfseries 15-316\quad Assignment \assignmentnumb\ \ \ \stulogin}}
+\rhead[{\bfseries\thepage}]{{\bfseries\thepage}}
+\pagestyle{fancy}
+\parskip 1ex
+\parindent 0mm
+
+% -----------Danny's Macros-------------
+
+\newcommand{\problem}[1]{\section{#1}\vspace{-1em}}
+\newcounter{partnumber}
+\newenvironment{parts}{\begin{list}{
+      % \arabic{problemnumber}\alph{partnumber}:}{
+      (\alph{partnumber})}{
+      \usecounter{partnumber} \setlength{\rightmargin}{\leftmargin}}
+    \setlength{\itemsep}{.0 in}}{
+  \end{list} \vspace*{.0 in}}
+
+% ---------------------------------------
+
+\begin{document}
+
+\centerline{Instructors: Matt Fredrikson, Jean Yang \hfill TA: Samuel Yeom} 
+\vspace{0.5ex}
+Due date: April 6 at 11:59pm \\
+\vspace{1.5ex}
+\centerline{\Large\bf Assignment \assignmentnumb}
+\vspace{0.5ex}
+\centerline{\Large\bf \stuname}
+
+This assignment will show you how to apply the what you learned about information flow type systems to the server you implemented in previous assignments. First, you will provide the operational semantics and information flow typing rules for the scripting language from Assignment 1, and prove the soundness of your type system. You will then implement this type system as a type checker for your server. Finally, you will compare this type checker to the reference monitor you worked with for Assignment 2.
+
+Recall the scripting language you implemented in Assignments 1 and 2. In this system, different principals can modify values on the system. We want to prevent unintended leaks of information between values that have been updated by different principals, and we will use information flow types to do so.
+
+For the purpose of modeling our system, we make the following simplifying modifications:
+\begin{enumerate}
+\item Instead of allowing the program to create principals, we assume the system has a fixed set of principals $p$.
+\item We only care about \texttt{read} and \texttt{write} permissions, and not \texttt{append} or \text{delegate}. Appending now requires \texttt{write} permissions, and only admin can set or delete delegations. As before, admin has read and write permissions on all variables, and the principal that creates a variable has read and write permissions on that variable.
+\item For the non-extra credit parts of the assignment, we will ignore records.
+\end{enumerate}
+Below is a subset of the language:
+
+\begin{center}
+\begin{tabular}{lcl}
+$\langle\mathbf{prog}\rangle$ & ::= & $\mathtt{as\ principal\ } \mathit{p}\ \mathtt{password}\ \mathit{s}\ \mathtt{do}\ \mathtt{\escape{n}}\ \langle\mathbf{cmd}\rangle\ \mathtt{***}$
+\\
+$\langle\mathbf{cmd}\rangle$ & ::= &
+$\mathtt{exit\ \escape{n}}$
+$|$ $\mathtt{return\ } \langle\mathbf{expr}\rangle\ \mathtt{\escape{n}}$
+$|$ $\langle\mathbf{prim\_cmd}\rangle\ \mathtt{\escape{n}}\ \langle\mathbf{cmd}\rangle$
+\\
+$\langle\mathbf{prim\_cmd}\rangle$ & ::= &
+\color{gray} $\mathtt{create\ principal}\ \mathit{p}\ \mathit{s}$ \\
+& $|$ & $\mathtt{set}\ \mathit{x}\ =\ \langle\mathbf{expr}\rangle$ \\
+& $|$ & $\mathtt{append\ to}\ \mathit{x}\ \mathtt{with}\ \langle\mathbf{expr}\rangle$ \\
+& $|$ & $\mathtt{filtereach}\ \mathit{y}\ \mathtt{in}\ \mathit{x}\ \mathtt{with}\ \langle\mathbf{expr}\rangle$ \\
+& $|$ & \color{gray} $\mathtt{set~delegation}~x~\langle \mathbf{right} \rangle~\texttt{->}~p$\\
+& $|$ & \color{gray} $\mathtt{delete~delegation}~x~\langle \mathbf{right} \rangle~\texttt{->}~p$\\
+$\langle\mathbf{expr}\rangle$ & ::= & $\langle\mathbf{value}\rangle$ $|$ \texttt{[]} $|$ \color{gray} $\{\langle\mathbf{fieldvals}\rangle\}$ \\
+& $|$ & $\mathtt{if}\ \langle\mathbf{bool\_expr}\rangle\ \mathtt{then}\ \langle\mathbf{expr}\rangle\ \mathtt{else}\ \langle\mathbf{expr}\rangle$ \\
+$\langle\mathbf{bool\_expr}\rangle$ & ::= & $\mathtt{true}$ $|$ $\mathtt{false}$ $|$ $\mathtt{equal}(\langle\mathbf{value}\rangle,\langle\mathbf{value}\rangle)$ $|$ $\mathtt{notequal}(\langle\mathbf{value}\rangle,\langle\mathbf{value}\rangle)$
+\\
+$\langle\mathbf{fieldvals}\rangle$ & ::= & $x = \langle\mathbf{value}\rangle$ $|$ $x = \langle\mathbf{value}\rangle, \langle\mathbf{fieldvals}\rangle$
+\\
+$\langle\mathbf{value}\rangle$ & ::= & $x$ $|$ {\color{gray} $x\mathtt{.}y$} $|$ $s$ \\
+$\langle\mathbf{right}\rangle$ & ::= & $\texttt{read} \mid \texttt{write}$
+\end{tabular}
+\end{center}
+
+\emph{In the theoretical portion of this assignment only}, you may ignore the parts that are grayed out. You have the option to analyze $\{\langle\mathbf{fieldvals}\rangle\}$ and $x.y$ for extra credit. All of the above syntax, including the grayed out parts, must be implemented in OCaml for the practical portion of this assignment.
+
+\begin{problem}{Information flow types: theory (30 points)}
+In this problem, you will provide an operational semantics for this language and typing rules and then prove (partial) soundness of the type system. For full soundness, we want to prove properties about both \emph{confidentiality} and \emph{integrity}. For the purposes of this assignment, however, we will focus on confidentiality: more specifically, noninterference.
+
+\begin{parts}
+        \item (1 point) Provide two examples of information leaks, and describe how a type system could prevent such leaks.
+        \item (1 point) What should the environment $\sigma$ map?
+        \item (4 points) Provide an operational semantics for expressions of the form
+\begin{equation*}
+\langle \sigma, \langle \mathbf{expr} \rangle \rangle \Downarrow s,
+\end{equation*}
+excluding records. (Note that records are grayed out because these are extra credit.)
+	\item (6 points) Provide an operational semantics for commands of the form
+\begin{equation*}
+\langle \sigma, \langle \mathbf{cmd} \rangle \rangle \Downarrow \sigma',
+\end{equation*}
+excluding records. Consider each $\langle \mathbf{prim\_cmd} \rangle$ separately.
+        \item (2 points) Each program runs under a specific principal $p$ with a specific set of permissions (that may change during the course of execution).  The goal of type system is to make sure that no action occurs that violates these permissions. Even though we have different principals here, we can use a type system similar to the one we saw in class, where variables that a principal is allowed to read are assigned $L$ (low, as opposed to $H$---high), and variables a principal is allowed to write are assigned $U$ (untrusted, as opposed to $T$---trusted). What is the security lattice $L = (SC, \leq, \sqcup, \sqcap, \bot)$, where $SC = \{ LU, LT, HU, HT \}$ (as seen in Lecture 12)?
+        \item (1 point) When a program is run as principal $p$, what does $\Gamma$ map?
+        \item (1 point) When, if at all, do we need to track a program counter variable \textbf{pc}? Explain your answer.
+        \item (4 points) Provide the rules for the typing judgment $\Gamma_p \vdash \langle \mathbf{expr} \rangle : \tau$ for expressions. Doing this will also involve providing rules for the typing judgment $\Gamma_p \vdash \langle \mathbf{bool\_expr} \rangle : \tau$.
+        \item (4 points) Provide the rules for the typing judgment $\Gamma_p \vdash \langle \mathbf{cmd} \rangle$ for commands. Consider each case of $\langle \mathbf{prim\_cmd} \rangle$ separately.
+        \item (1 point) State the Noninterference property we want to prove to show soundness.
+        \item (4 points) Prove Simple Security for your typing rules.
+        \item (1 point) Prove Confinement for your typing rules.
+        \item (\textbf{Extra credit:} 5 points) Prove Noninterference for your typing rules.
+        \item (\textbf{Extra credit:} 4 points) Add rules for records, and extend the proofs of Simple Security and Confinement.
+\end{parts}
+
+\subsection*{Solution}
+\begin{parts}
+    \item
+	\item 
+	\item 
+	\item 
+	\item 
+	\item 
+	\item 
+    \item
+    \item
+    \item
+    \item
+    \item
+\end{parts}
+\end{problem}
+\newpage
+\begin{problem}{Information flow types: practice (20 points)}
+Now we will ask you to implement your information flow type system.
+
+\begin{parts}
+    \item (2 points) Declare a new data type \texttt{sc} for security classes, as well as functions for implementing the lattice.
+	\item (3 points) Implement a function \texttt{typecheck\_exp:~principal -> exp -> sc} that checks expressions. You do not need to implement checking for programs not defined according to Part 1, and you may return an \texttt{Unimplemented} error in these cases. (We will not write test cases containing any of those cases.)
+    \item (5 points) Implement a function \texttt{typecheck\_cmd:~principal -> cmd -> bool}. 
+    \item (8 points) Implement a comprehensive test suite that includes both tests that type-check and those that do not.
+	\item (2 points) Discuss the advantages of using type-checking for information flow, as opposed to the reference monitor from Assignment 2. Under what circumstances, including hypothetical extensions to the scripting language and/or permissions, might each be favorable?
+\end{parts}
+
+\subsection*{Solution}
+\begin{parts}
+        \item
+	\item 
+	\item 
+	\item 
+        \item
+\end{parts}
+\end{problem}
+
+\end{document}
