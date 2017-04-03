@@ -49,6 +49,7 @@ Due date: April 6 at 11:59pm \\
 \centerline{\Large\bf Assignment \assignmentnumb}
 \vspace{0.5ex}
 \centerline{\Large\bf \stuname}
+\parbox{\textwidth}{\hfill \color{red} Last updated on April 2}
 
 This assignment will show you how to apply the what you learned about information flow type systems to the server you implemented in previous assignments. First, you will provide the operational semantics and information flow typing rules for the scripting language from Assignment 1, and prove the soundness of your type system. You will then implement this type system as a type checker for your server. Finally, you will compare this type checker to the reference monitor you worked with for Assignment 2.
 
@@ -141,19 +142,17 @@ Now we will ask you to implement your information flow type system.
 
 \begin{parts}
     \item (2 points) Declare a new data type \texttt{sc} for security classes, as well as functions for implementing the lattice.
-	\item (3 points) Implement a function \texttt{typecheck\_exp:~principal -> exp -> sc} that checks expressions. You do not need to implement checking for programs not defined according to Part 1, and you may return an \texttt{Unimplemented} error in these cases. (We will not write test cases containing any of those cases.)
+	\item (3 points) Implement a function \texttt{typecheck\_exp:~principal -> exp -> sc} that checks expressions. You do not need to implement checking for programs not defined according to {\color{red} the modified syntax}, and you may return an \texttt{Unimplemented} error in these cases. (We will not write test cases containing any of those cases.)
     \item (5 points) Implement a function \texttt{typecheck\_cmd:~principal -> cmd -> bool}. 
-    \item (8 points) Implement a comprehensive test suite that includes both tests that type-check and those that do not.
+    \item (8 points) Implement a comprehensive test suite that includes both tests that type-check and those that do not. {\color{red} In the space provided below, briefly document your test cases and their expected outputs.}
 	\item (2 points) Discuss the advantages of using type-checking for information flow, as opposed to the reference monitor from Assignment 2. Under what circumstances, including hypothetical extensions to the scripting language and/or permissions, might each be favorable?
 \end{parts}
 
 \subsection*{Solution}
 \begin{parts}
-        \item
-	\item 
-	\item 
-	\item 
-        \item
+    \setcounter{partnumber}{3}
+    \item
+    \item
 \end{parts}
 \end{problem}
 
