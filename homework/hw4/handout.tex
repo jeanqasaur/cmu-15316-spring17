@@ -49,7 +49,7 @@ Due date: April 6 at 11:59pm \\
 \centerline{\Large\bf Assignment \assignmentnumb}
 \vspace{0.5ex}
 \centerline{\Large\bf \stuname}
-\parbox{\textwidth}{\hfill \color{red} Last updated on April 2}
+\parbox{\textwidth}{\hfill \color{red} Last updated on April 5}
 
 This assignment will show you how to apply the what you learned about information flow type systems to the server you implemented in previous assignments. First, you will provide the operational semantics and information flow typing rules for the scripting language from Assignment 1, and prove the soundness of your type system. You will then implement this type system as a type checker for your server. Finally, you will compare this type checker to the reference monitor you worked with for Assignment 2.
 
@@ -90,7 +90,7 @@ $\langle\mathbf{right}\rangle$ & ::= & $\texttt{read} \mid \texttt{write}$
 \end{tabular}
 \end{center}
 
-\emph{In the theoretical portion of this assignment only}, you may ignore the parts that are grayed out. You have the option to analyze $\{\langle\mathbf{fieldvals}\rangle\}$ and $x.y$ for extra credit. All of the above syntax, including the grayed out parts, must be implemented in OCaml for the practical portion of this assignment.
+In the theoretical portion of this assignment, you may ignore all parts that are grayed out. You have the option to analyze $\{\langle\mathbf{fieldvals}\rangle\}$ and $x.y$ for extra credit. {\color{red} All $\langle \mathbf{prim\_cmd} \rangle$s (but not $\{\langle\mathbf{fieldvals}\rangle\}$ and $x.y$) must be implemented in OCaml for the practical portion of this assignment.}
 
 \begin{problem}{Information flow types: theory (30 points)}
 In this problem, you will provide an operational semantics for this language and typing rules and then prove (partial) soundness of the type system. For full soundness, we want to prove properties about both \emph{confidentiality} and \emph{integrity}. For the purposes of this assignment, however, we will focus on confidentiality: more specifically, noninterference.
@@ -143,7 +143,7 @@ Now we will ask you to implement your information flow type system.
 \begin{parts}
     \item (2 points) Declare a new data type \texttt{sc} for security classes, as well as functions for implementing the lattice.
 	\item (3 points) Implement a function \texttt{typecheck\_exp:~principal -> exp -> sc} that checks expressions. You do not need to implement checking for programs not defined according to {\color{red} the modified syntax}, and you may return an \texttt{Unimplemented} error in these cases. (We will not write test cases containing any of those cases.)
-    \item (5 points) Implement a function \texttt{typecheck\_cmd:~principal -> cmd -> bool}. 
+    \item (5 points) Implement a function \texttt{typecheck\_cmd:~principal -> cmd {\color{red} list} -> bool}. 
     \item (8 points) Implement a comprehensive test suite that includes both tests that type-check and those that do not. {\color{red} In the space provided below, briefly document your test cases and their expected outputs.}
 	\item (2 points) Discuss the advantages of using type-checking for information flow, as opposed to the reference monitor from Assignment 2. Under what circumstances, including hypothetical extensions to the scripting language and/or permissions, might each be favorable?
 \end{parts}
