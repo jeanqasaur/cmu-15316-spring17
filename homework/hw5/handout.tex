@@ -1,0 +1,183 @@
+\documentclass[11pt]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% EDIT THESE TWO COMMANDS TO BE YOUR ANDREW ID AND NAME
+\newcommand*{\stulogin}{}
+\newcommand*{\stuname}{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\usepackage{amsmath, amsfonts, amssymb, amsthm}
+\usepackage{fancyhdr}
+\usepackage{fullpage-old}
+\usepackage{framed}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathpartir}
+
+\newcommand*{\assignmentnumb}{5}
+
+\newcommand*{\escape}[1]{\expandafter\string\csname #1\endcsname}
+% ---------------------------------------------------------------------------
+
+\lhead[{\bfseries 15-316\quad Assignment \assignmentnumb\ \ \ \stulogin}]{{\bfseries 15-316\quad Assignment \assignmentnumb\ \ \ \stulogin}}
+\rhead[{\bfseries\thepage}]{{\bfseries\thepage}}
+\pagestyle{fancy}
+\parskip 1ex
+\parindent 0mm
+
+% -----------Danny's Macros-------------
+
+\newcommand{\problem}[1]{\section{#1}\vspace{-1em}}
+\newcounter{partnumber}
+\newenvironment{parts}{\begin{list}{
+      % \arabic{problemnumber}\alph{partnumber}:}{
+      (\alph{partnumber})}{
+      \usecounter{partnumber} \setlength{\rightmargin}{\leftmargin}}
+    \setlength{\itemsep}{.0 in}}{
+  \end{list} \vspace*{.0 in}}
+
+% ---------------------------------------
+
+\newcommand{\declassop}[1]{\ensuremath{\mathbf{#1}}\xspace}
+\newcommand{\match}{\declassop{match}}
+\newcommand{\gt}{\declassop{gt}}
+\newcommand{\ecm}{\declassop{ecm}}
+\newcommand{\prefix}{\declassop{prefix}}
+\newcommand{\isum}{\declassop{sum}}
+\newcommand{\iparity}{\declassop{parity}}
+\newcommand{\imaj}{\declassop{maj}}
+
+\newcommand{\guess}{\ensuremath{\mathtt{guess}}\xspace}
+\newcommand{\pin}{\ensuremath{\mathtt{pin}}\xspace}
+\newcommand{\indices}{\ensuremath{\mathtt{indices}}\xspace}
+\newcommand{\htype}{\ensuremath{\mathsf{H}}\xspace}
+\newcommand{\ltype}{\ensuremath{\mathsf{L}}\xspace}
+\newcommand{\poly}{\ensuremath{\mathrm{poly}}\xspace}
+
+\newcommand{\key}{\ensuremath{\mathbf{key}}\xspace}
+\newcommand{\act}{\ensuremath{\mathbf{action}}\xspace}
+\newcommand{\signed}{\ensuremath{\mathbf{signed}}\xspace}
+\newcommand{\delegates}{\ensuremath{\mathbf{delegates}}\xspace}
+\newcommand{\says}{\ensuremath{\mathbf{says}}\xspace}
+\newcommand{\speaksfor}{\ensuremath{\mathbf{speaksfor}}\xspace}
+
+
+\begin{document}
+
+\centerline{Instructors: Matt Fredrikson, Jean Yang \hfill TA: Samuel Yeom} 
+\vspace{0.5ex}
+Due date: April 28 at 11:59pm \\
+\vspace{1.5ex}
+\centerline{\Large\bf Assignment \assignmentnumb}
+\vspace{0.5ex}
+\centerline{\Large\bf \stuname}
+\parbox{\textwidth}{\hfill \color{red} Last updated on April 25}
+
+\begin{problem}{Audit (32 points)}
+In class, we discussed audit, and presented a logic that resembled the authorization logic from earlier in the semester. \textbf{In this assignment, you will extend your code from Assignment~2 so that the server can provide a proof that each executed command was properly authorized.} In particular, you will design and implement an audit mechanism that is based on the authorization logic and consists of the following parts:
+\begin{description}
+\item[\ \ Logger.] The logger will record a sequence of commands that were executed by the server. Importantly, the logger does \emph{not} need to record all \emph{attempted} commands. If a user submits a program that fails due to a security violation, or fails to commit for any other reason, then the information recorded by the logger does not need to reflect the event.
+\item[\ \ Prover.] Given an entry from the log file, the prover constructs a proof in the authorization logic that the recorded event was allowed according to the security policy from Assignment~2.
+\end{description}
+
+The set of principals will be the set of usernames in the server's memory, including \texttt{admin}. Principals can be added when \texttt{admin} requests the appropriate action. In the authorization logic presented in class, we had $p ::= \key(s) \mid \mathsf{identifier} \mid p.s$. In this assignment, no one will sign any statements, nor will there be any ambiguity about which principal an identifier refers to. Hence, we will remove the parts of the authorization logic that have to do with $\key(s)$ and $p.s$. The resulting logic is reproduced below for your convenience.
+
+Statements, where $s$ is a string and $p$ is a principal (\delegates has been slightly modified):
+\[
+\begin{array}{lrl}
+%
+\phi & ::= & \act(s) \\
+& | & p\ \says\ \phi \\
+& | & p\ \speaksfor\ p \\
+& | & \delegates(p, p, \act(s)) \\
+& | & \phi \rightarrow \phi
+\end{array}
+\]
+Inference rules (\textsc{Delegate-E} has been slightly modified):
+\begin{mathpar}
+	\inferrule[Says-I2]
+	{\phi}
+	{p\ \says\ \phi}
+	\quad
+	\inferrule[Says-Impl]
+	{p\ \says\ (\phi_1 \rightarrow \phi_2) \\ p\ \says\ \phi_1}
+	{p\ \says\ \phi_2}
+	\quad
+	\\
+	\inferrule[Speaks-E1]
+	{p_1\ \says\ (p_2\ \speaksfor\ p_1) \\ p_2\ \says\ \phi}
+	{p_1\ \says\ \phi}
+	\\
+	\inferrule[Delegate-E]
+	{p_1\ \says\ \delegates(p_1,p_2,\act(s)) \\ p_2\ \says\ \act(s)}
+	{p_1\ \says\ \act(s)}
+\end{mathpar}
+
+You will use the code in the file \texttt{proof.ml} to represent statements and proofs in the authorization logic. You will need to add \texttt{proof.ml} to \texttt{Makefile} in an appropriate place so that all dependencies between files are satisfied. In particular, \texttt{proof.ml} requires \texttt{ast.ml}, and some of your other files will depend on \texttt{proof.ml}.
+
+In the given code, the type \texttt{stmt} represents statement $\phi$, and the type \texttt{proof} represents an application of an inference rule. For example, in \texttt{SaysI2 of proof * stmt}, the \texttt{proof} should be a proof of $\phi$, and the \texttt{stmt} should be $p\ \says\ \phi$. In rules with two premises, the first \texttt{proof} should be a proof of the premise on the left, and the second should be a proof of the premise on the right. \texttt{Given of int * stmt} represents statements that are assumed to be true, either because it is one of the policies or because it is in the log. In the former case, the \texttt{int} should be zero, and otherwise, it should be the line number of the statement in the log.
+
+\textbf{For this assignment, you can assume that the input programs will contain neither $\mathtt{delete\ delegation}$ commands nor the principal $\mathtt{anyone}$.} {\color{red} In addition, you don't have to consider the case where the \texttt{delegate} permission is delegated. In other words, only \texttt{admin} can delegate permissions.} Operationally, this means that you do not need to think about these programs when you complete this problem, and none of the test cases used for grading will invoke such programs.
+
+\paragraph{Part 1. \normalfont{(6 points)}} First, you will need to make the authorization logic a bit more specific to the operations carried out by your server. The authorization logic was general, and encapsulated all types of requests in the $\act(s)$ statement, which corresponds to a request for the action denoted by string $s$. In this setting, there is a limited set of actions that can follow from requests. In the space provided below, list a minimal set of statements necessary to achieve complete auditing of the server's history. When you have identified a complete set, there should no longer be a need for the $\act(s)$ statement in the logic's grammar. Then, write the code for the OCaml type \texttt{action} in the skeleton code provided in \texttt{proof.ml}.
+
+\emph{Example.} One type of action corresponds to reading a variable $x$, so we might extend the syntax with a $\mathbf{read}(x)$ action.
+
+\paragraph{Solution 1.}
+
+\paragraph{Part 2. \normalfont{(6 points)}} Now that you have specialized the authorization logic to the server, you need a set of policies that make it possible to prove authorizations using the rules we discussed in class. Recall that a policy in this context is simply an assumption, in the form of a statement from the logic, that the prover can use towards a goal. In this context, the prover's goals will be statements of the form:
+\[
+\texttt{admin}\ \says\ \act(s)
+\]
+where $\act(s)$ stands for one of the actions that you wrote in Part 1. In the space provided below, write the policies and briefly justify them.
+
+\emph{Hint.} Think about what happens when users create variables. What assumptions do we need to give the prover so that statements of the form above can eventually be proven? Because the authorization logic does not have any quantifiers, you will need to add more assumptions when variables or principals are added to the server. Policies are often of the form $\mathtt{admin}\ \says\  (\phi_1 \rightarrow \phi_2)$, which can be used in proofs with \textsc{Says-Impl}.
+
+\paragraph{Solution 2.}
+
+\paragraph{Part 3. \normalfont{(10 points)}} Construct a mapping from \emph{commands} executed by the server to \emph{log entries}, and update your implementation with this mapping to create the logger. You should make sure that your log enables the following functionality.
+\begin{enumerate}
+\item The audit log should account for \textbf{every command} executed and successfully committed on the server, in the order in which they were executed.
+\item Given your mapping from commands to log entries, it should be straightforward for an auditor to locate the log entry corresponding to a given command.
+\item An auditor should be able to use the log, in combination with your answer for Part 2, to construct an authorization proof for any successful command.
+\end{enumerate}
+In particular, log entries should be \texttt{stmt}s the form:
+\[
+p\ \says\ \phi
+\]
+where $p$ is the principal who executed the command that maps to $\phi$. When the changes made by the commands are committed, you should use the provided function \texttt{string\_of\_stmt} to convert the log entries to strings and append them to \texttt{log.txt}, with each entry on its own line.
+
+\paragraph{Part 4. \normalfont{(10 points)}} Implement the prover. After each successful execution of a command, the prover should produce a $\mathtt{proof}$ of the statement $\mathtt{admin}\ \says\ \phi$, where $\phi$ is the statement appearing in the corresponding log entry $p\ \says\ \phi$. Use the provided function \texttt{string\_of\_proof} to convert the proof to a string and append it to \texttt{proof.txt}. The grader will use a modified version of the function \texttt{string\_of\_proof} to automatically check the proofs, so it is essential that you call this function.
+\end{problem}
+
+\newpage
+
+\begin{problem}{Declassification (18 points)}
+Recall the \match declassification operator
+\begin{mathpar}
+\inferrule{\Gamma \vdash e_1 : \ell_1 \quad \Gamma \vdash e_2 : \ell_2}{\Gamma \vdash \match(e_1, e_2) : \ell_1 \sqcap \ell_2},
+\end{mathpar}
+where $\match(e_1, e_2)$ evaluates to $\mathtt{true}$ if and only if $e_1$ and $e_2$ evaluate to the same value.
+
+In class, we used an example with the typing judgments $\Gamma \vdash \guess : \ltype$ and $\Gamma \vdash \pin : \htype$. We assumed that the attacker has the ability to repeatedly call $\match(\guess, \pin)$ with its choice of the value of \guess and observe the output. We showed that, even with this ability, a deterministic attacker cannot always figure out the value of an $n$-bit string \pin in $\mathrm{poly}(n)$ time, which means that \match is in some sense a ``safe" declassification operator.
+
+For the declassification operators defined below, determine whether an attacker can always use it to figure out the value of an $n$-bit string \pin in $\poly(n)$ time. If so, describe how. If not, prove why not. All declassification operators below have the same typing rule as \match.
+\begin{parts}
+	\item (3 points) Greater than: $\gt(\guess, \pin)$ evaluates $\mathtt{true}$ if and only if \guess, interpreted as an integer, is greater than the $n$-bit string \pin, interpreted as an integer.
+	\item (3 points) Error-correcting match: $\ecm(\guess, \pin)$ evaluates to $\mathtt{true}$ if and only if \guess is an $n$-bit string that differs from the $n$-bit string \pin by at most 1 bit.
+	\item (3 points) Prefix: $\prefix(\guess, \pin)$ evaluates to $\mathtt{true}$ if and only if \guess is a prefix of the $n$-bit string \pin.
+\end{parts}
+In the following declassification operators, \guess is replaced by \indices, which is a subset of $\{1, \ldots, n\}$ that indicates which bits of the $n$-bit string \pin are relevant. One way to think about this is that each bit of \pin is the answer to a yes/no question about a person, and the declassification operator is used to ask questions about a subset of the $n$ people.
+
+Because it would be trivial to recover \pin if \indices could contain only one element, we add the restriction that \indices must have size at least 10. In your answer, consider only the case where $n \gg 10$.
+\begin{parts}
+\setcounter{partnumber}{3}
+	\item (3 points) Sum: $\isum(\indices, \pin)$ evaluates to the sum of the relevant bits. (Relevance is indicated by \indices.)
+	\item (3 points) Parity: $\iparity(\indices, \pin)$ evaluates to $\mathtt{true}$ if and only if the sum of the relevant bits is even.
+	\item (3 points) Majority: $\imaj(\indices, \pin)$ evaluates to $\mathtt{true}$ if and only if more than half of the relevant bits are 1.
+\end{parts}
+\end{problem}
+
+\end{document}
