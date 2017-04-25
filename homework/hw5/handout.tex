@@ -73,6 +73,7 @@ Due date: April 28 at 11:59pm \\
 \centerline{\Large\bf Assignment \assignmentnumb}
 \vspace{0.5ex}
 \centerline{\Large\bf \stuname}
+\parbox{\textwidth}{\hfill \color{red} Last updated on April 25}
 
 \begin{problem}{Audit (32 points)}
 In class, we discussed audit, and presented a logic that resembled the authorization logic from earlier in the semester. \textbf{In this assignment, you will extend your code from Assignment~2 so that the server can provide a proof that each executed command was properly authorized.} In particular, you will design and implement an audit mechanism that is based on the authorization logic and consists of the following parts:
@@ -118,7 +119,7 @@ You will use the code in the file \texttt{proof.ml} to represent statements and 
 
 In the given code, the type \texttt{stmt} represents statement $\phi$, and the type \texttt{proof} represents an application of an inference rule. For example, in \texttt{SaysI2 of proof * stmt}, the \texttt{proof} should be a proof of $\phi$, and the \texttt{stmt} should be $p\ \says\ \phi$. In rules with two premises, the first \texttt{proof} should be a proof of the premise on the left, and the second should be a proof of the premise on the right. \texttt{Given of int * stmt} represents statements that are assumed to be true, either because it is one of the policies or because it is in the log. In the former case, the \texttt{int} should be zero, and otherwise, it should be the line number of the statement in the log.
 
-\textbf{For this assignment, you can assume that the input programs will contain neither $\mathtt{delete\ delegation}$ commands nor the principal $\mathtt{anyone}$.} Operationally, this means that you do not need to think about these programs when you complete this problem, and none of the test cases used for grading will invoke such programs.
+\textbf{For this assignment, you can assume that the input programs will contain neither $\mathtt{delete\ delegation}$ commands nor the principal $\mathtt{anyone}$.} {\color{red} In addition, you don't have to consider the case where the \texttt{delegate} permission is delegated. In other words, only \texttt{admin} can delegate permissions.} Operationally, this means that you do not need to think about these programs when you complete this problem, and none of the test cases used for grading will invoke such programs.
 
 \paragraph{Part 1. \normalfont{(6 points)}} First, you will need to make the authorization logic a bit more specific to the operations carried out by your server. The authorization logic was general, and encapsulated all types of requests in the $\act(s)$ statement, which corresponds to a request for the action denoted by string $s$. In this setting, there is a limited set of actions that can follow from requests. In the space provided below, list a minimal set of statements necessary to achieve complete auditing of the server's history. When you have identified a complete set, there should no longer be a need for the $\act(s)$ statement in the logic's grammar. Then, write the code for the OCaml type \texttt{action} in the skeleton code provided in \texttt{proof.ml}.
 
